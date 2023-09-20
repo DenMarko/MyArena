@@ -109,6 +109,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR pCommandLine, int
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	g_pGlob->pIO = &io;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 	CSetting *gSetting = new CSetting();
 
 	gSetting->SetStile();
@@ -230,6 +231,12 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR pCommandLine, int
 
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+		}
+
 		g_pSwapChain->Present(1, 0);
 	}
 
@@ -323,7 +330,15 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
+	case WM_DPICHANGED:
+		if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DpiEnableScaleViewports)
+		{
+			const RECT* suggested_rect = (RECT*)lParam;
+			SetWindowPos(hWnd, nullptr, suggested_rect->left, suggested_rect->top, suggested_rect->right - suggested_rect->left, suggested_rect->bottom - suggested_rect->top, SWP_NOZORDER | SWP_NOACTIVATE);
+		}
+		break;
 	}
+
 
 	return DefWindowProcW(hWnd, msg, wParam, lParam);
 }

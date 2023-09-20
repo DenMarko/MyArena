@@ -200,8 +200,16 @@ void CSetting::SetStile()
 		break;
 	}
 
-	ImGui::GetStyle().FrameRounding = 2;
-	ImGui::GetStyle().GrabRounding = 2;
+	auto &style = ImGui::GetStyle();
+
+	if (_glob_.pIO->ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		style.WindowRounding = 0.f;
+		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+	}
+
+	style.FrameRounding = 2;
+	style.GrabRounding = 2;
 }
 
 void CSetting::Draw(bool *o_open)
@@ -306,7 +314,7 @@ void CSetting::Draw(bool *o_open)
 	}
 
 	ImGui::Spacing();
-	ImGui::Separator();
+	ImGui::SeparatorText(gLangManager->GetLang("Language"));
 	ImGui::Spacing();
 
 	const char *combLang[3] = {gLangManager->GetLang("Ukrainian"), gLangManager->GetLang("Russian"), gLangManager->GetLang("English")};

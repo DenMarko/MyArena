@@ -77,7 +77,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>F:\source\Microsoft DirectX SDK %28June 2010%29\Include;F:\source\CURL\rapidjson-master\include\rapidjson;C:\Users\DenМарко\source\repos\IMgui\MyArena\curl\include;F:\source\imgui-master;F:\source\imgui-master\backends;F:\source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\source\Microsoft DirectX SDK %28June 2010%29\Include;F:\source\CURL\rapidjson-master\include\rapidjson;C:\Users\DenМарко\source\repos\IMgui\MyArena\curl\include;F:\source\imgui-docking;F:\source\imgui-docking\backends;F:\source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>IMGUI_DISABLE_DEMO_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -106,7 +106,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>F:\source\Microsoft DirectX SDK %28June 2010%29\Include;F:\source\CURL\rapidjson-master\include\rapidjson;C:\Users\DenМарко\source\repos\IMgui\MyArena\curl\include;F:\source\imgui-master;F:\source\imgui-master\backends;F:\source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\source\Microsoft DirectX SDK %28June 2010%29\Include;F:\source\CURL\rapidjson-master\include\rapidjson;C:\Users\DenМарко\source\repos\IMgui\MyArena\curl\include;F:\source\imgui-docking;F:\source\imgui-docking\backends;F:\source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>IMGUI_DISABLE_DEMO_WINDOWS;IMGUI_DISABLE_DEBUG_TOOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
@@ -139,13 +139,13 @@
     <ClCompile Include="CSetting.cpp" />
     <ClCompile Include="C_CUrl.cpp" />
     <ClCompile Include="C_Time.cpp" />
-    <ClCompile Include="F:\source\imgui-master\backends\imgui_impl_dx11.cpp" />
-    <ClCompile Include="F:\source\imgui-master\backends\imgui_impl_win32.cpp" />
-    <ClCompile Include="F:\source\imgui-master\imgui.cpp" />
-    <ClCompile Include="F:\source\imgui-master\imgui_demo.cpp" />
-    <ClCompile Include="F:\source\imgui-master\imgui_draw.cpp" />
-    <ClCompile Include="F:\source\imgui-master\imgui_tables.cpp" />
-    <ClCompile Include="F:\source\imgui-master\imgui_widgets.cpp" />
+    <ClCompile Include="F:\source\imgui-docking\backends\imgui_impl_dx11.cpp" />
+    <ClCompile Include="F:\source\imgui-docking\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="F:\source\imgui-docking\imgui.cpp" />
+    <ClCompile Include="F:\source\imgui-docking\imgui_demo.cpp" />
+    <ClCompile Include="F:\source\imgui-docking\imgui_draw.cpp" />
+    <ClCompile Include="F:\source\imgui-docking\imgui_tables.cpp" />
+    <ClCompile Include="F:\source\imgui-docking\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ShowConsoleLog.cpp" />
     <ClCompile Include="ShowControlServer.cpp" />
@@ -157,11 +157,11 @@
     <ClInclude Include="CSetting.h" />
     <ClInclude Include="C_CUrl.h" />
     <ClInclude Include="C_Time.h" />
-    <ClInclude Include="F:\source\imgui-master\backends\imgui_impl_dx11.h" />
-    <ClInclude Include="F:\source\imgui-master\backends\imgui_impl_win32.h" />
-    <ClInclude Include="F:\source\imgui-master\imconfig.h" />
-    <ClInclude Include="F:\source\imgui-master\imgui.h" />
-    <ClInclude Include="F:\source\imgui-master\imgui_internal.h" />
+    <ClInclude Include="F:\source\imgui-docking\backends\imgui_impl_dx11.h" />
+    <ClInclude Include="F:\source\imgui-docking\backends\imgui_impl_win32.h" />
+    <ClInclude Include="F:\source\imgui-docking\imconfig.h" />
+    <ClInclude Include="F:\source\imgui-docking\imgui.h" />
+    <ClInclude Include="F:\source\imgui-docking\imgui_internal.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ShowConsoleLog.h" />
     <ClInclude Include="ShowControlServer.h" />

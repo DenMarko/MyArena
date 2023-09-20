@@ -13,37 +13,16 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="ImGui">
-      <UniqueIdentifier>{e79604e0-d66b-495f-93cd-3ece36dbddd9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Timer">
       <UniqueIdentifier>{f64c9977-03ee-462e-98d5-77228d0585c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ImGui_docking">
+      <UniqueIdentifier>{e79604e0-d66b-495f-93cd-3ece36dbddd9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="F:\source\imgui-master\backends\imgui_impl_dx11.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="F:\source\imgui-master\backends\imgui_impl_win32.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="F:\source\imgui-master\imgui.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="F:\source\imgui-master\imgui_demo.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="F:\source\imgui-master\imgui_draw.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="F:\source\imgui-master\imgui_tables.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="F:\source\imgui-master\imgui_widgets.cpp">
-      <Filter>ImGui</Filter>
     </ClCompile>
     <ClCompile Include="ShowConsoleLog.cpp">
       <Filter>Исходные файлы</Filter>
@@ -66,17 +45,29 @@
     <ClCompile Include="CLangManager.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="F:\source\imgui-docking\imgui.cpp">
+      <Filter>ImGui_docking</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\source\imgui-docking\imgui_demo.cpp">
+      <Filter>ImGui_docking</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\source\imgui-docking\imgui_draw.cpp">
+      <Filter>ImGui_docking</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\source\imgui-docking\imgui_tables.cpp">
+      <Filter>ImGui_docking</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\source\imgui-docking\imgui_widgets.cpp">
+      <Filter>ImGui_docking</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\source\imgui-docking\backends\imgui_impl_dx11.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\source\imgui-docking\backends\imgui_impl_win32.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="F:\source\imgui-master\imconfig.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="F:\source\imgui-master\imgui.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="F:\source\imgui-master\imgui_internal.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
     <ClInclude Include="C_Time.h">
       <Filter>Timer</Filter>
     </ClInclude>
@@ -84,12 +75,6 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="ShowConsoleLog.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="F:\source\imgui-master\backends\imgui_impl_win32.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="F:\source\imgui-master\backends\imgui_impl_dx11.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="APIInterface.h">
@@ -109,6 +94,21 @@
     </ClInclude>
     <ClInclude Include="CLangManager.h">
       <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="F:\source\imgui-docking\backends\imgui_impl_dx11.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="F:\source\imgui-docking\backends\imgui_impl_win32.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="F:\source\imgui-docking\imconfig.h">
+      <Filter>ImGui_docking</Filter>
+    </ClInclude>
+    <ClInclude Include="F:\source\imgui-docking\imgui.h">
+      <Filter>ImGui_docking</Filter>
+    </ClInclude>
+    <ClInclude Include="F:\source\imgui-docking\imgui_internal.h">
+      <Filter>ImGui_docking</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
