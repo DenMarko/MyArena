@@ -734,7 +734,7 @@ public:
 	{}
 } TimeCall;
 
-void C_CUrl::Draw()
+void C_CUrl::OnUIRender()
 {
 	this->CheckToken();
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "curl/include/curl.h"
+#include "libs/curl/include/curl.h"
 #include "APIInterface.h"
 #include "C_Time.h"
 #include "imgui.h"
@@ -18,15 +18,19 @@ enum COMAND {
 	COMMAND_CONSOLE_CMD
 };
 
-class C_CUrl
+class C_CUrl : public CUIRender
 {
 public:
 	C_CUrl();
 	~C_CUrl();
 
 	void *GetData(COMAND command, const char *cmd = nullptr);
-	void Draw();
 	void LoadImageMap(std::string url_img, vector<char> *MapImag);
+
+	virtual void OnAttach(bool *IsOpen) override {}
+	virtual void OnDetach() override {}
+
+	virtual void OnUIRender() override;
 
 private:
 	void *SetToken(const char* cToken);

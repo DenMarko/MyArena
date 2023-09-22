@@ -48,9 +48,6 @@
     <ClCompile Include="F:\source\imgui-docking\imgui.cpp">
       <Filter>ImGui_docking</Filter>
     </ClCompile>
-    <ClCompile Include="F:\source\imgui-docking\imgui_demo.cpp">
-      <Filter>ImGui_docking</Filter>
-    </ClCompile>
     <ClCompile Include="F:\source\imgui-docking\imgui_draw.cpp">
       <Filter>ImGui_docking</Filter>
     </ClCompile>

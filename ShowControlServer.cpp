@@ -115,212 +115,214 @@ bool CControlServer::LoadBuffer(char* filebuf, const size_t fSize, ID3D11ShaderR
 	return true;
 }
 
-void CControlServer::Draw(bool *isOpen)
+void CControlServer::OnUIRender()
 {
-	if(IsStatusReady)
+	if (*Is_open)
 	{
-		if (Status)
+		if(IsStatusReady)
 		{
-			if (p_gStatus != Status)
+			if (Status)
 			{
-				delete p_gStatus;
-				p_gStatus = Status;
-				Status = nullptr;
+				if (p_gStatus != Status)
+				{
+					delete p_gStatus;
+					p_gStatus = Status;
+					Status = nullptr;
+				}
 			}
 		}
-	}
 
-	ImGui::SetNextWindowSize(ImVec2(500, 400), ImGuiCond_FirstUseEver);
-	if (!ImGui::Begin(gLangManager->GetLang("Server management"), isOpen))
-	{
-		ImGui::End();
-		return;
-	}
-
-	ImGui::BeginChild("Left", ImVec2(160, 140));
-	if (im_texture_url == nullptr)
-	{
-		if (im_texture != nullptr)
+		ImGui::SetNextWindowSize(ImVec2(500, 400), ImGuiCond_FirstUseEver);
+		if (!ImGui::Begin(gLangManager->GetLang("Server management"), Is_open))
 		{
-			ImGui::Image((void *)im_texture, ImVec2(static_cast<float>(im_width), static_cast<float>(im_height)));
+			ImGui::End();
+			return;
 		}
-	}
-	else
-	{
-		ImGui::Image((void *)im_texture_url, ImVec2(static_cast<float>(im_width_url), static_cast<float>(im_height_url)));
-	}
-	ImGui::EndChild();
-	ImGui::SameLine();
 
-	ImGui::BeginGroup();
-	ImGui::BeginChild("Right", ImVec2(0, -(ImGui::GetFrameHeightWithSpacing()-160)));
-
-	ImGui::Text(u8"%s", p_gStatus->data->hostname.c_str());
-
-	if(p_gStatus->online == 0)
-		ImGui::Text(u8"%s", gLangManager->GetLang("Status: Disabled"));
-	else if(p_gStatus->online == 1)
-		ImGui::Text(u8"%s", gLangManager->GetLang("Status: Enabled"));
-	else if(p_gStatus->online == 2)
-		ImGui::Text(u8"%s", gLangManager->GetLang("Status: Reboot"));
-	else
-		ImGui::Text(u8" ");
-
-	ImGui::Text(u8"IP: %s", p_gStatus->data->addres.c_str());
-	ImGui::Text(u8"%s: %s", gLangManager->GetLang("Map"), p_gStatus->data->mapname.c_str());
-	ImGui::Text(u8"%s: %i/%i", gLangManager->GetLang("Players"), p_gStatus->data->numPlayers, p_gStatus->data->maxPlayers);
-	ImGui::Text(u8"%s: %d", gLangManager->GetLang("Server ID"), p_gStatus->server_id);
-	ImGui::Text(u8"%s: %d", gLangManager->GetLang("Days until the end of the lease"), p_gStatus->server_daytoblock);
-
-	ImGui::EndChild();
-	ImGui::EndGroup();
-
-	ImGui::Spacing();
-	ImGui::SeparatorText(gLangManager->GetLang("Management"));
-	ImGui::Spacing();
-
-	if (ImGui::Button(gLangManager->GetLang("Start"), ImVec2(80, 0)))
-	{
-		if (p_gStatus->online == 0)
+		ImGui::BeginChild("Left", ImVec2(160, 140));
+		if (im_texture_url == nullptr)
 		{
-			auto res = reinterpret_cast<CmdResult *>(p_gUrl->GetData(COMAND::COMMAND_START));
-
-			if (res->status == STATUS::STATUS_OK)
+			if (im_texture != nullptr)
 			{
-				g_pNotif->Notificatio(res->msg.c_str());
+				ImGui::Image((void *)im_texture, ImVec2(static_cast<float>(im_width), static_cast<float>(im_height)));
 			}
-
-			delete res;
 		}
 		else
 		{
-			g_pNotif->Notificatio(u8"%s", p_gStatus->online == 1 ? gLangManager->GetLang("The server is already enabled") : p_gStatus->online == 2 ? gLangManager->GetLang("The server reboots") : u8"NULL");
+			ImGui::Image((void *)im_texture_url, ImVec2(static_cast<float>(im_width_url), static_cast<float>(im_height_url)));
 		}
-	}
-	ImGui::SameLine();
-	if (ImGui::Button(gLangManager->GetLang("Stop"), ImVec2(80, 0)))
-	{
-		if (p_gStatus->online == 1)
-		{
-			auto res = reinterpret_cast<CmdResult *>(p_gUrl->GetData(COMAND::COMMAND_STOP));
+		ImGui::EndChild();
+		ImGui::SameLine();
 
-			if (res->status == STATUS::STATUS_OK)
-			{
-				g_pNotif->Notificatio(res->msg.c_str());
-			}
+		ImGui::BeginGroup();
+		ImGui::BeginChild("Right", ImVec2(0, -(ImGui::GetFrameHeightWithSpacing()-160)));
 
-			delete res;
-		}
+		ImGui::Text(u8"%s", p_gStatus->data->hostname.c_str());
+
+		if(p_gStatus->online == 0)
+			ImGui::Text(gLangManager->GetLang("Status: Disabled"));
+		else if(p_gStatus->online == 1)
+			ImGui::Text(gLangManager->GetLang("Status: Enabled"));
+		else if(p_gStatus->online == 2)
+			ImGui::Text(gLangManager->GetLang("Status: Reboot"));
 		else
-		{
-			g_pNotif->Notificatio(u8"%s", p_gStatus->online == 0 ? gLangManager->GetLang("The server is already down") : p_gStatus->online == 2 ? gLangManager->GetLang("The server reboots") : u8"NULL");
-		}
-	}
-	ImGui::SameLine();
-	if (ImGui::Button(gLangManager->GetLang("Restart"), ImVec2(80, 0)))
-	{
-		if (p_gStatus->online == 1)
-		{
-			auto res = reinterpret_cast<CmdResult *>(p_gUrl->GetData(COMAND::COMMAND_RESTART));
+			ImGui::Text(u8" ");
 
-			if (res->status == STATUS::STATUS_OK)
+		ImGui::Text(u8"IP: %s", p_gStatus->data->addres.c_str());
+		ImGui::Text(u8"%s: %s", gLangManager->GetLang("Map"), p_gStatus->data->mapname.c_str());
+		ImGui::Text(u8"%s: %i/%i", gLangManager->GetLang("Players"), p_gStatus->data->numPlayers, p_gStatus->data->maxPlayers);
+		ImGui::Text(u8"%s: %d", gLangManager->GetLang("Server ID"), p_gStatus->server_id);
+		ImGui::Text(u8"%s: %d", gLangManager->GetLang("Days until the end of the lease"), p_gStatus->server_daytoblock);
+
+		ImGui::EndChild();
+		ImGui::EndGroup();
+
+		ImGui::Spacing();
+		ImGui::SeparatorText(gLangManager->GetLang("Management"));
+		ImGui::Spacing();
+
+		if (ImGui::Button(gLangManager->GetLang("Start"), ImVec2(80, 0)))
+		{
+			if (p_gStatus->online == 0)
 			{
-				g_pNotif->Notificatio(res->msg.c_str());
-			}
+				auto res = reinterpret_cast<CmdResult *>(p_gUrl->GetData(COMAND::COMMAND_START));
 
-			delete res;
-		}
-		else
-		{
-			g_pNotif->Notificatio(u8"%s", p_gStatus->online == 0 ? gLangManager->GetLang("The server is down") : p_gStatus->online == 2 ? gLangManager->GetLang("The server is already rebooting") : u8"NULL");
-		}
-	}
-	ImGui::SameLine();
-	if (ImGui::Button(gLangManager->GetLang("Go to the server"), ImVec2(130, 0)))
-	{
-		if (p_gStatus->online == 1)
-		{
-			SHELLEXECUTEINFO info = {0};
-			info.cbSize = sizeof(SHELLEXECUTEINFO);
-			info.lpVerb = "open";
-			info.lpFile = p_gStatus->JoinServer.c_str();
-			info.nShow = SW_SHOWNORMAL;
-
-			ShellExecuteEx(&info);
-		}
-		else
-		{
-			g_pNotif->Notificatio(u8"%s", p_gStatus->online == 0 ? gLangManager->GetLang("The server is down") : p_gStatus->online == 2 ? gLangManager->GetLang("The server reboots") : u8"NULL");
-		}
-	}
-	ImGui::SameLine();
-
-	static int item_cur_id = 0;
-	const char *comb_prev_val = p_gMaps != nullptr ? p_gMaps->status == STATUS::STATUS_OK ? p_gMaps->maps[item_cur_id].c_str() : '\0' : '\0';
-	if (ImGui::BeginCombo(gLangManager->GetLang("Change map"), comb_prev_val, ImGuiComboFlags_NoPreview))
-	{
-		int n = 0;
-		for (auto& str : p_gMaps->maps)
-		{
-			const bool is_select = (item_cur_id == n);
-			if(ImGui::Selectable(str.c_str(), is_select))
-			{
-				item_cur_id = n;
-				auto res = reinterpret_cast<CmdResult *>(p_gUrl->GetData(COMAND::COMMAND_CHANGE_LEVEL, str.c_str()));
 				if (res->status == STATUS::STATUS_OK)
 				{
-					g_pNotif->Notificatio(u8"%s", res->msg.c_str());
+					g_pNotif->Notificatio(res->msg.c_str());
 				}
+
 				delete res;
 			}
-
-			if(is_select)
-				ImGui::SetItemDefaultFocus();
-
-			n++;
-		}
-
-		ImGui::EndCombo();
-	}
-
-	ImGui::Spacing();
-	ImGui::SeparatorText(gLangManager->GetLang("Players"));
-	ImGui::Spacing();
-
-	static ImGuiTableFlags mFlags = ImGuiTableFlags_Borders | ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_SizingStretchProp;
-	if (ImGui::BeginTable(gLangManager->GetLang("Players"), 3, mFlags, ImVec2(0, -ImGui::GetFrameHeightWithSpacing())))
-	{
-		ImGui::TableSetupColumn(gLangManager->GetLang("Player name"), ImGuiTableColumnFlags_WidthFixed, 300.f);
-		ImGui::TableSetupColumn(gLangManager->GetLang("Frags"), ImGuiTableColumnFlags_WidthFixed, 50.f);
-		ImGui::TableSetupColumn(gLangManager->GetLang("Time in game"), ImGuiTableColumnFlags_WidthFixed);
-		ImGui::TableHeadersRow();
-
-		for (auto &p : p_gStatus->data->players)
-		{
-			ImGui::TableNextRow();
-			for(int col = 0; col < 3; col++)
+			else
 			{
-				ImGui::TableSetColumnIndex(col);
-				if (col == 0)
-				{
-					ImGui::Text(u8"%s", p.name.c_str());
-				}
-				else if (col == 1)
-				{
-					ImGui::Text(u8"%i", p.score);
-				}
-				else if (col == 2)
-				{
-					ImGui::Text(u8"%s", p.time_to_game.c_str());
-				}
+				g_pNotif->Notificatio(u8"%s", p_gStatus->online == 1 ? gLangManager->GetLang("The server is already enabled") : p_gStatus->online == 2 ? gLangManager->GetLang("The server reboots") : u8"NULL");
 			}
 		}
+		ImGui::SameLine();
+		if (ImGui::Button(gLangManager->GetLang("Stop"), ImVec2(80, 0)))
+		{
+			if (p_gStatus->online == 1)
+			{
+				auto res = reinterpret_cast<CmdResult *>(p_gUrl->GetData(COMAND::COMMAND_STOP));
 
-		ImGui::EndTable();
+				if (res->status == STATUS::STATUS_OK)
+				{
+					g_pNotif->Notificatio(res->msg.c_str());
+				}
+
+				delete res;
+			}
+			else
+			{
+				g_pNotif->Notificatio(u8"%s", p_gStatus->online == 0 ? gLangManager->GetLang("The server is already down") : p_gStatus->online == 2 ? gLangManager->GetLang("The server reboots") : u8"NULL");
+			}
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(gLangManager->GetLang("Restart"), ImVec2(80, 0)))
+		{
+			if (p_gStatus->online == 1)
+			{
+				auto res = reinterpret_cast<CmdResult *>(p_gUrl->GetData(COMAND::COMMAND_RESTART));
+
+				if (res->status == STATUS::STATUS_OK)
+				{
+					g_pNotif->Notificatio(res->msg.c_str());
+				}
+
+				delete res;
+			}
+			else
+			{
+				g_pNotif->Notificatio(u8"%s", p_gStatus->online == 0 ? gLangManager->GetLang("The server is down") : p_gStatus->online == 2 ? gLangManager->GetLang("The server is already rebooting") : u8"NULL");
+			}
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(gLangManager->GetLang("Go to the server"), ImVec2(130, 0)))
+		{
+			if (p_gStatus->online == 1)
+			{
+				SHELLEXECUTEINFO info = {0};
+				info.cbSize = sizeof(SHELLEXECUTEINFO);
+				info.lpVerb = "open";
+				info.lpFile = p_gStatus->JoinServer.c_str();
+				info.nShow = SW_SHOWNORMAL;
+
+				ShellExecuteEx(&info);
+			}
+			else
+			{
+				g_pNotif->Notificatio(u8"%s", p_gStatus->online == 0 ? gLangManager->GetLang("The server is down") : p_gStatus->online == 2 ? gLangManager->GetLang("The server reboots") : u8"NULL");
+			}
+		}
+		ImGui::SameLine();
+
+		static int item_cur_id = 0;
+		const char *comb_prev_val = p_gMaps != nullptr ? p_gMaps->status == STATUS::STATUS_OK ? p_gMaps->maps[item_cur_id].c_str() : '\0' : '\0';
+		if (ImGui::BeginCombo(gLangManager->GetLang("Change map"), comb_prev_val, ImGuiComboFlags_NoPreview))
+		{
+			int n = 0;
+			for (auto& str : p_gMaps->maps)
+			{
+				const bool is_select = (item_cur_id == n);
+				if(ImGui::Selectable(str.c_str(), is_select))
+				{
+					item_cur_id = n;
+					auto res = reinterpret_cast<CmdResult *>(p_gUrl->GetData(COMAND::COMMAND_CHANGE_LEVEL, str.c_str()));
+					if (res->status == STATUS::STATUS_OK)
+					{
+						g_pNotif->Notificatio(u8"%s", res->msg.c_str());
+					}
+					delete res;
+				}
+
+				if(is_select)
+					ImGui::SetItemDefaultFocus();
+
+				n++;
+			}
+
+			ImGui::EndCombo();
+		}
+
+		ImGui::Spacing();
+		ImGui::SeparatorText(gLangManager->GetLang("Players"));
+		ImGui::Spacing();
+
+		static ImGuiTableFlags mFlags = ImGuiTableFlags_Borders | ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_SizingStretchProp;
+		if (ImGui::BeginTable(gLangManager->GetLang("Players"), 3, mFlags, ImVec2(0, -ImGui::GetFrameHeightWithSpacing())))
+		{
+			ImGui::TableSetupColumn(gLangManager->GetLang("Player name"), ImGuiTableColumnFlags_WidthFixed, 300.f);
+			ImGui::TableSetupColumn(gLangManager->GetLang("Frags"), ImGuiTableColumnFlags_WidthFixed, 50.f);
+			ImGui::TableSetupColumn(gLangManager->GetLang("Time in game"), ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableHeadersRow();
+
+			for (auto &p : p_gStatus->data->players)
+			{
+				ImGui::TableNextRow();
+				for(int col = 0; col < 3; col++)
+				{
+					ImGui::TableSetColumnIndex(col);
+					if (col == 0)
+					{
+						ImGui::Text(u8"%s", p.name.c_str());
+					}
+					else if (col == 1)
+					{
+						ImGui::Text(u8"%i", p.score);
+					}
+					else if (col == 2)
+					{
+						ImGui::Text(u8"%s", p.time_to_game.c_str());
+					}
+				}
+			}
+
+			ImGui::EndTable();
+		}
+
+		ImGui::End();
 	}
-
-	ImGui::End();
-	return;
 }
 
 TimerResult CControlServer::OnTimer(void *pData)

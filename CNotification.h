@@ -3,8 +3,10 @@
 #include "C_Time.h"
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "CSetting.h"
 
-class CNotification : public ITimerEvent
+class CNotification : public ITimerEvent,
+						public CUIRender
 {
 public:
 	CNotification() : ShowNotification(false)
@@ -20,7 +22,11 @@ public:
 	virtual void OnTimerEnd(void *pData)
 	{}
 
-	void Draw();
+	virtual void OnAttach(bool *IsOpen) override {}
+	virtual void OnDetach() override {}
+
+	virtual void OnUIRender() override;
+
 	bool Notificatio(const char* msg, ...);
 	void HelpMarcer(const char *dest);
 

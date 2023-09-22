@@ -7,6 +7,17 @@
 
 using namespace std;
 
+class CUIRender
+{
+public:
+	virtual ~CUIRender() = default;
+
+	virtual void OnAttach(bool *IsOpen) {}
+	virtual void OnDetach() {}
+
+	virtual void OnUIRender() {}
+};
+
 enum EnumStyle
 {
 	Style_Dark = 0,
@@ -48,14 +59,19 @@ struct Globals
 	float fIntervalServerConsole;
 };
 
-class CSetting
+class CSetting : public CUIRender
 {
 public:
 	CSetting();
 	~CSetting();
 
-	void Draw(bool *isOpen);
 	void SetStile();
+
+	virtual void OnAttach(bool *IsOpen) override;
+	virtual void OnDetach() override;
+
+	virtual void OnUIRender() override;
+
 private:
 	string encrypt(string message, int shift)
 	{
@@ -80,6 +96,7 @@ private:
 	}
 private:
 	rapidjson::Document doc;
+	bool *IsOpen;
 };
 
 extern Globals *g_pGlob;

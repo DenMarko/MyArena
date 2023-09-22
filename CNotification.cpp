@@ -3,7 +3,7 @@
 CNotification mNotif;
 CNotification *g_pNotif = &mNotif;
 
-void CNotification::Draw()
+void CNotification::OnUIRender()
 {
 	if (ShowNotification)
 	{

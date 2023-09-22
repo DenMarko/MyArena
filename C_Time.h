@@ -78,7 +78,6 @@ private:
 	float m_fLastTickedTime;
 
 	std::vector<ITimer *> mLoopTimer;
-	std::mutex mtx;
 };
 
 extern C_Timer *timer;

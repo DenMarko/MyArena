@@ -5,7 +5,8 @@
 #include "C_CUrl.h"
 #include <stdio.h>
 
-class CControlServer : public ITimerEvent
+class CControlServer : public ITimerEvent,
+						public CUIRender
 {
 public:
 	CControlServer(ID3D11Device* pDevice, C_CUrl *p_Url);
@@ -27,7 +28,11 @@ public:
 		}
 	}
 
-	void Draw(bool *IsOpen);
+
+	virtual void OnAttach(bool *IsOpen) override { Is_open = IsOpen; }
+	virtual void OnDetach() override {}
+
+	virtual void OnUIRender() override;
 
 	virtual TimerResult OnTimer(void *pData);
 	virtual void OnTimerEnd(void *pData)
@@ -53,5 +58,6 @@ private:
 	GetMapList		*p_gMaps;
 	std::string		prevMap;
 
-	atomic<bool> IsStatusReady;
+	atomic<bool>	IsStatusReady;
+	bool*			Is_open;
 };

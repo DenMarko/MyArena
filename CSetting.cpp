@@ -212,132 +212,137 @@ void CSetting::SetStile()
 	style.GrabRounding = 2;
 }
 
-void CSetting::Draw(bool *o_open)
+void CSetting::OnAttach(bool *Is_Open) { IsOpen = Is_Open; }
+void CSetting::OnDetach() {}
+void CSetting::OnUIRender()
 {
-	ImGui::SetNextWindowSize(ImVec2(500, 500), ImGuiCond_FirstUseEver);
-	if (!ImGui::Begin(gLangManager->GetLang("Settings"), o_open))
+	if (*IsOpen)
 	{
-		ImGui::End();
-		return;
-	}
-
-	const char *combStyle[3] = {gLangManager->GetLang("Dark theme"), gLangManager->GetLang("Bright theme"), gLangManager->GetLang("A classic theme")};
-	const char *combPrevVal = combStyle[_glob_.enumStyle];
-	if (ImGui::BeginCombo(gLangManager->GetLang("Color theme"), combPrevVal))
-	{
-		int n = 0;
-		for (int i = 0; i < 3; i++)
+		ImGui::SetNextWindowSize(ImVec2(500, 500), ImGuiCond_FirstUseEver);
+		if (!ImGui::Begin(gLangManager->GetLang("Settings"), IsOpen))
 		{
-			const bool is_select = (_glob_.enumStyle == n);
-			if (ImGui::Selectable(combStyle[i], is_select))
-			{
-				_glob_.enumStyle = (n == 0 ? Style_Dark : n == 1 ? Style_Light : Style_Classic);
-				SetStile();
-			}
-
-			if (is_select)
-			{
-				ImGui::SetItemDefaultFocus();
-			}
-			n++;
+			ImGui::End();
+			return;
 		}
-		ImGui::EndCombo();
-	}
 
-	if (ImGui::SliderFloat(gLangManager->GetLang("Font size"), &_glob_.fFontSize, 8.0f, 20.f, "%1.f", ImGuiSliderFlags_AlwaysClamp))
-	{
-		_glob_.pFont->Scale = _glob_.fFontSize / _glob_.pFont->FontSize;
-	}
-
-	ImGui::Spacing();
-	ImGui::SeparatorText(gLangManager->GetLang("Change the data update time"));
-	ImGui::Spacing();
-
-	const char *combIntervalLog[5] = {u8"2 sec", u8"3 sec", u8"4 sec", u8"5 sec", u8"6 sec"};
-	const char *combPrevValInterval = combIntervalLog[static_cast<int>(_glob_.fIntervalServerConsole) - 2];
-	if(ImGui::BeginCombo(gLangManager->GetLang("Console"), combPrevValInterval, ImGuiComboFlags_NoPreview))
-	{
-		for (int i = 0; i < 5; i++)
+		const char *combStyle[3] = {gLangManager->GetLang("Dark theme"), gLangManager->GetLang("Bright theme"), gLangManager->GetLang("Classic theme")};
+		const char *combPrevVal = combStyle[_glob_.enumStyle];
+		if (ImGui::BeginCombo(gLangManager->GetLang("Color theme"), combPrevVal))
 		{
-			const bool is_select = ((static_cast<int>(_glob_.fIntervalServerConsole) - 2) == i);
-			if(ImGui::Selectable(combIntervalLog[i], is_select))
+			int n = 0;
+			for (int i = 0; i < 3; i++)
 			{
-				_glob_.fIntervalServerConsole = static_cast<float>(i + 2);
-				_glob_.g_ServerConsole->SetNewInterval(_glob_.fIntervalServerConsole);
-			}
-
-			if (is_select)
-			{
-				ImGui::SetItemDefaultFocus();
-			}
-		}
-		ImGui::EndCombo();
-	}
-
-	ImGui::SameLine();
-
-	const char *combIntervalControl[4] = {u8"5 sec", u8"10 sec", u8"15 sec", u8"20 sec"};
-	const char *combPrevInterControl = combIntervalControl[_glob_.fIntervalControlServer == 5.f ? 0 : _glob_.fIntervalControlServer == 10.f ? 1 : _glob_.fIntervalControlServer == 15.f ? 2 : 3];
-	if (ImGui::BeginCombo(gLangManager->GetLang("Server information"), combPrevInterControl, ImGuiComboFlags_NoPreview))
-	{
-		for (int i = 0; i < 4; i++)
-		{
-			const bool isSelect = ((_glob_.fIntervalControlServer == 5.f ? 0 : _glob_.fIntervalControlServer == 10.f ? 1 : _glob_.fIntervalControlServer == 15.f ? 2 : 3) == i); 
-			if (ImGui::Selectable(combIntervalControl[i], isSelect))
-			{
-				switch (i)
+				const bool is_select = (_glob_.enumStyle == n);
+				if (ImGui::Selectable(combStyle[i], is_select))
 				{
-					case 0:
-						_glob_.fIntervalControlServer = 5.f;
-						break;
-					case 1:
-						_glob_.fIntervalControlServer = 10.f;
-						break;
-					case 2:
-						_glob_.fIntervalControlServer = 15.f;
-						break;
-					case 3:
-						_glob_.fIntervalControlServer = 20.f;
-						break;
+					_glob_.enumStyle = (n == 0 ? Style_Dark : n == 1 ? Style_Light : Style_Classic);
+					SetStile();
 				}
 
-				_glob_.g_ControlServer->SetNewInterval(_glob_.fIntervalControlServer);
+				if (is_select)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+				n++;
 			}
-
-			if (isSelect)
-			{
-				ImGui::SetItemDefaultFocus();
-			}
+			ImGui::EndCombo();
 		}
 
-		ImGui::EndCombo();
-	}
-
-	ImGui::Spacing();
-	ImGui::SeparatorText(gLangManager->GetLang("Language"));
-	ImGui::Spacing();
-
-	const char *combLang[3] = {gLangManager->GetLang("Ukrainian"), gLangManager->GetLang("Russian"), gLangManager->GetLang("English")};
-	const char *combPrevLang = combLang[(_glob_.enumLang == LANG::UA ? 0 : _glob_.enumLang == LANG::RU ? 1 : 2)];
-	if(ImGui::BeginCombo(gLangManager->GetLang("Language"), combPrevLang))
-	{
-		for (int i = 0; i < 3; i++)
+		if (ImGui::SliderFloat(gLangManager->GetLang("Font size"), &_glob_.fFontSize, 8.0f, 20.f, "%1.f", ImGuiSliderFlags_AlwaysClamp))
 		{
-			const bool is_select = ((_glob_.enumLang == LANG::UA ? 0 : _glob_.enumLang == LANG::RU ? 1 : 2) == i);
-			if(ImGui::Selectable(combLang[i], is_select))
-			{
-				_glob_.enumLang = (i == 0 ? LANG::UA : i == 1 ? LANG::RU : LANG::EN);
-			}
-
-			if (is_select)
-			{
-				ImGui::SetItemDefaultFocus();
-			}
+			_glob_.pFont->Scale = _glob_.fFontSize / _glob_.pFont->FontSize;
 		}
-		ImGui::EndCombo();
+
+		ImGui::Spacing();
+		ImGui::SeparatorText(gLangManager->GetLang("Change the data update time"));
+		ImGui::Spacing();
+
+		const char *combIntervalLog[5] = {u8"2 sec", u8"3 sec", u8"4 sec", u8"5 sec", u8"6 sec"};
+		const char *combPrevValInterval = combIntervalLog[static_cast<int>(_glob_.fIntervalServerConsole) - 2];
+		if(ImGui::BeginCombo(gLangManager->GetLang("Console"), combPrevValInterval, ImGuiComboFlags_NoPreview))
+		{
+			for (int i = 0; i < 5; i++)
+			{
+				const bool is_select = ((static_cast<int>(_glob_.fIntervalServerConsole) - 2) == i);
+				if(ImGui::Selectable(combIntervalLog[i], is_select))
+				{
+					_glob_.fIntervalServerConsole = static_cast<float>(i + 2);
+					_glob_.g_ServerConsole->SetNewInterval(_glob_.fIntervalServerConsole);
+				}
+
+				if (is_select)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+
+		ImGui::SameLine();
+
+		const char *combIntervalControl[4] = {u8"5 sec", u8"10 sec", u8"15 sec", u8"20 sec"};
+		const char *combPrevInterControl = combIntervalControl[_glob_.fIntervalControlServer == 5.f ? 0 : _glob_.fIntervalControlServer == 10.f ? 1 : _glob_.fIntervalControlServer == 15.f ? 2 : 3];
+		if (ImGui::BeginCombo(gLangManager->GetLang("Server information"), combPrevInterControl, ImGuiComboFlags_NoPreview))
+		{
+			for (int i = 0; i < 4; i++)
+			{
+				const bool isSelect = ((_glob_.fIntervalControlServer == 5.f ? 0 : _glob_.fIntervalControlServer == 10.f ? 1 : _glob_.fIntervalControlServer == 15.f ? 2 : 3) == i); 
+				if (ImGui::Selectable(combIntervalControl[i], isSelect))
+				{
+					switch (i)
+					{
+						case 0:
+							_glob_.fIntervalControlServer = 5.f;
+							break;
+						case 1:
+							_glob_.fIntervalControlServer = 10.f;
+							break;
+						case 2:
+							_glob_.fIntervalControlServer = 15.f;
+							break;
+						case 3:
+							_glob_.fIntervalControlServer = 20.f;
+							break;
+					}
+
+					_glob_.g_ControlServer->SetNewInterval(_glob_.fIntervalControlServer);
+				}
+
+				if (isSelect)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+
+			ImGui::EndCombo();
+		}
+
+		ImGui::Spacing();
+		ImGui::SeparatorText(gLangManager->GetLang("Language"));
+		ImGui::Spacing();
+
+		const char *combLang[3] = {gLangManager->GetLang("Ukrainian"), gLangManager->GetLang("Russian"), gLangManager->GetLang("English")};
+		const char *combPrevLang = combLang[(_glob_.enumLang == LANG::UA ? 0 : _glob_.enumLang == LANG::RU ? 1 : 2)];
+		if(ImGui::BeginCombo(gLangManager->GetLang("Language"), combPrevLang))
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				const bool is_select = ((_glob_.enumLang == LANG::UA ? 0 : _glob_.enumLang == LANG::RU ? 1 : 2) == i);
+				if(ImGui::Selectable(combLang[i], is_select))
+				{
+					_glob_.enumLang = (i == 0 ? LANG::UA : i == 1 ? LANG::RU : LANG::EN);
+				}
+
+				if (is_select)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+
+
+		ImGui::End();
 	}
-
-
-	ImGui::End();
 	return;
 }

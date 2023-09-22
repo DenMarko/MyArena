@@ -3,13 +3,13 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include "C_Time.h"
+#include "C_CUrl.h"
 
-void ShowConsoleLogs(bool *IsOpen);
-
-class CShowConsoleLog : public ITimerEvent
+class CShowConsoleLog : public ITimerEvent,
+						public CUIRender
 {
 public:
-	CShowConsoleLog()
+	CShowConsoleLog(C_CUrl *url) : p_gUrl(url)
 	{
 		memset(InputBuf, 0, sizeof(InputBuf));
 		HistoryPos = -1;
@@ -29,7 +29,10 @@ public:
 
 	void AddLog(const char *fmt, ...);
 
-	void Draw(const char *title, bool *p_open = nullptr);
+	virtual void OnAttach(bool *IsOpen) override;
+	virtual void OnDetach() override {}
+
+	virtual void OnUIRender() override;
 
 	virtual TimerResult OnTimer(void *pData);
 	virtual void OnTimerEnd(void *pData) {}
@@ -68,11 +71,12 @@ private:
 
 	int				TextEditCallback(ImGuiInputTextCallbackData* data);
 
+	C_CUrl				*p_gUrl;
 	ImGuiTextBuffer		lBuf;
 	ImVector<int>		LineOffsets;
 	ImVector<char*>		History;
 	char				InputBuf[256];
 	int					HistoryPos;
-};
 
-extern CShowConsoleLog *Showlog;
+	bool*				Is_open;
+};

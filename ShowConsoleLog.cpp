@@ -1,23 +1,7 @@
 #include "ShowConsoleLog.h"
 #include "CNotification.h"
-#include "C_CUrl.h"
 
 #pragma warning(disable: 4996)
-
-CShowConsoleLog *Showlog = new CShowConsoleLog();
-
-void ShowConsoleLogs(bool *IsOpen)
-{
-	ImGui::SetNextWindowSize(ImVec2(500, 400), ImGuiCond_FirstUseEver);
-	if (!ImGui::Begin(gLangManager->GetLang("Server console"), IsOpen))
-	{
-		ImGui::End();
-		return;
-	}
-
-	ImGui::End();
-	Showlog->Draw(gLangManager->GetLang("Server console"), IsOpen);
-}
 
 void CShowConsoleLog::Clear()
 {
@@ -43,77 +27,84 @@ void CShowConsoleLog::AddLog(const char *fmt, ...)
 	CheckLimit(lBuf, LineOffsets);
 }
 
-void CShowConsoleLog::Draw(const char *title, bool *p_open)
+void CShowConsoleLog::OnAttach(bool * IsOpen) {	Is_open = IsOpen; }
+void CShowConsoleLog::OnUIRender()
 {
-	if (!ImGui::Begin(title, p_open))
+	if (*Is_open)
 	{
-		ImGui::End();
-		return;
-	}
-
-	const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
-	if (ImGui::BeginChild("scrolling", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar))
-	{
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
-
-		const char *buf = lBuf.begin();
-		const char *buf_end = lBuf.end();
-
-		ImGuiListClipper cliper;
-		cliper.Begin(LineOffsets.Size);
-
-		while (cliper.Step())
+		ImGui::SetNextWindowSize(ImVec2(500, 400), ImGuiCond_FirstUseEver);
+		if (!ImGui::Begin(gLangManager->GetLang("Server console"), Is_open))
 		{
-			for (int line_no = cliper.DisplayStart; line_no < cliper.DisplayEnd; line_no++)
-			{
-				const char *line_start = buf + LineOffsets[line_no];
-				const char *line_end = (line_no + 1 < LineOffsets.Size) ? (buf + LineOffsets[line_no + 1] - 1) : buf_end;
-				ImGui::TextUnformatted(line_start, line_end);
-			}
+			ImGui::End();
+			return;
 		}
 
-		cliper.End();
-		ImGui::PopStyleVar();
-
-		if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+		const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+		if (ImGui::BeginChild("scrolling", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar))
 		{
-			ImGui::SetScrollHereY(1.0f);
-		}
-	}
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 
-	ImGui::EndChild();
-	ImGui::Separator();
+			const char *buf = lBuf.begin();
+			const char *buf_end = lBuf.end();
 
-	ImGuiInputTextFlags fInput_text = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory;
-	if (ImGui::InputText(gLangManager->GetLang("Enter the command"), InputBuf, IM_ARRAYSIZE(InputBuf), fInput_text, &TextEditCallbackStub, (void*)this))
-	{
-		char *s = InputBuf;
-		Strtrim(s);
-		if (s[0]) {
-			CmdResult* res = reinterpret_cast< CmdResult *>(pUrls->GetData(COMMAND_CONSOLE_CMD, s));
-			if (res->status == STATUS::STATUS_OK)
+			ImGuiListClipper cliper;
+			cliper.Begin(LineOffsets.Size);
+
+			while (cliper.Step())
 			{
-				g_pNotif->Notificatio(res->msg.c_str());
-			}
-			delete res;
-
-			HistoryPos = -1;
-			for (int i = History.Size - 1; i >= 0; i--)
-			{
-				if (Stricmp(History[i], s) == 0)
+				for (int line_no = cliper.DisplayStart; line_no < cliper.DisplayEnd; line_no++)
 				{
-					free(History[i]);
-					History.erase(History.begin() + i);
-					break;
+					const char *line_start = buf + LineOffsets[line_no];
+					const char *line_end = (line_no + 1 < LineOffsets.Size) ? (buf + LineOffsets[line_no + 1] - 1) : buf_end;
+					ImGui::TextUnformatted(line_start, line_end);
 				}
 			}
-			History.push_back(Strdup(s));
-		}
-		strcpy(s, "");
-	}
-	ImGui::SetItemDefaultFocus();
 
-	ImGui::End();
+			cliper.End();
+			ImGui::PopStyleVar();
+
+			if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+			{
+				ImGui::SetScrollHereY(1.0f);
+			}
+		}
+
+		ImGui::EndChild();
+		ImGui::Separator();
+
+		ImGuiInputTextFlags fInput_text = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory;
+		if (ImGui::InputText(gLangManager->GetLang("Enter the command"), InputBuf, IM_ARRAYSIZE(InputBuf), fInput_text, &TextEditCallbackStub, (void*)this))
+		{
+			char *s = InputBuf;
+			Strtrim(s);
+			if (s[0]) {
+				CmdResult* res = reinterpret_cast< CmdResult *>(pUrls->GetData(COMMAND_CONSOLE_CMD, s));
+				if (res->status == STATUS::STATUS_OK)
+				{
+					g_pNotif->Notificatio(res->msg.c_str());
+				}
+				delete res;
+
+				HistoryPos = -1;
+				for (int i = History.Size - 1; i >= 0; i--)
+				{
+					if (Stricmp(History[i], s) == 0)
+					{
+						free(History[i]);
+						History.erase(History.begin() + i);
+						break;
+					}
+				}
+				History.push_back(Strdup(s));
+			}
+			strcpy(s, "");
+		}
+		ImGui::SetItemDefaultFocus();
+
+		ImGui::End();
+
+	}
+	return;
 }
 
 int CShowConsoleLog::TextEditCallback(ImGuiInputTextCallbackData* data)
@@ -199,9 +190,10 @@ int CShowConsoleLog::TextEditCallback(ImGuiInputTextCallbackData* data)
 	return 0;
 }
 
+
 TimerResult CShowConsoleLog::OnTimer(void *pData)
 {
-	auto *con_log = reinterpret_cast<GetConsole *>(((C_CUrl *)pData)->GetData(COMMAND_GET_CONSOLE));
+	auto *con_log = reinterpret_cast<GetConsole *>(p_gUrl->GetData(COMMAND_GET_CONSOLE));
 
 	if(con_log == nullptr)
 		return Time_Continue;
