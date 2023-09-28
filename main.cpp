@@ -16,7 +16,7 @@ static IDXGISwapChain*          g_pSwapChain = nullptr;
 static UINT                     g_ResizeWidth = 0, g_ResizeHeight = 0;
 static ID3D11RenderTargetView*  g_mainRenderTargetView = nullptr;
 
-//bool m_TitleBarHovered = false;
+bool m_TitleBar = false;
 
 vector<CUIRender*> m_RenderSteck;
 
@@ -63,6 +63,8 @@ private:
 	condition_variable m_CondVar;
 };
 
+namespace UI
+{
 void RenderWindowOuterBorders(ImGuiWindow* window)
 {
 	struct ImGuiResizeBorderDef
@@ -75,9 +77,9 @@ void RenderWindowOuterBorders(ImGuiWindow* window)
 	static const ImGuiResizeBorderDef resize_border_def[4] =
 	{
 		{ ImVec2(+1, 0), ImVec2(0, 1), ImVec2(0, 0), IM_PI * 1.00f }, // Left
-	{ ImVec2(-1, 0), ImVec2(1, 0), ImVec2(1, 1), IM_PI * 0.00f }, // Right
-	{ ImVec2(0, +1), ImVec2(0, 0), ImVec2(1, 0), IM_PI * 1.50f }, // Up
-	{ ImVec2(0, -1), ImVec2(1, 1), ImVec2(0, 1), IM_PI * 0.50f }  // Down
+		{ ImVec2(-1, 0), ImVec2(1, 0), ImVec2(1, 1), IM_PI * 0.00f }, // Right
+		{ ImVec2(0, +1), ImVec2(0, 0), ImVec2(1, 0), IM_PI * 1.50f }, // Up
+		{ ImVec2(0, -1), ImVec2(1, 1), ImVec2(0, 1), IM_PI * 0.50f }  // Down
 	};
 
 	auto GetResizeBorderRect = [](ImGuiWindow* window, int border_n, float perp_padding, float thickness)
@@ -99,7 +101,7 @@ void RenderWindowOuterBorders(ImGuiWindow* window)
 
 	ImGuiContext& g = *GImGui;
 	float rounding = window->WindowRounding;
-	float border_size = 1.0f; // window->WindowBorderSize;
+	float border_size = 1.0f;
 	if (border_size > 0.0f && !(window->Flags & ImGuiWindowFlags_NoBackground))
 		window->DrawList->AddRect(window->Pos, { window->Pos.x + window->Size.x,  window->Pos.y + window->Size.y }, ImGui::GetColorU32(ImGuiCol_Border), rounding, 0, border_size);
 
@@ -120,7 +122,7 @@ void RenderWindowOuterBorders(ImGuiWindow* window)
 
 		window->DrawList->PathArcTo(p1, rounding, def.OuterAngle - IM_PI * 0.25f, def.OuterAngle);
 		window->DrawList->PathArcTo(p2, rounding, def.OuterAngle, def.OuterAngle + IM_PI * 0.25f);
-		window->DrawList->PathStroke(ImGui::GetColorU32(ImGuiCol_SeparatorActive), 0, ImMax(2.0f, border_size)); // Thicker than usual
+		window->DrawList->PathStroke(ImGui::GetColorU32(ImGuiCol_SeparatorActive), 0, ImMax(2.0f, border_size));
 	}
 	if (g.Style.FrameBorderSize > 0 && !(window->Flags & ImGuiWindowFlags_NoTitleBar) && !window->DockIsActive)
 	{
@@ -129,22 +131,125 @@ void RenderWindowOuterBorders(ImGuiWindow* window)
 	}
 }
 
+bool IsMouseHovered(const ImVec2& MousePos, const ImVec2& pos_min, const ImVec2& pos_max)
+{
+	if (MousePos.x >= pos_min.x && MousePos.x <= pos_max.x && MousePos.y >= pos_min.y && MousePos.y <= pos_max.y)
+	{
+		return true;
+	}
+	return false;
+}
+
+bool IsCloseButtomDown(const ImVec2& MousePos, const ImVec2& pos_min, const ImVec2& pos_max)
+{
+	auto gfDraw = ImGui::GetForegroundDrawList();
+	bool ret = false , hov = false;
+
+	if (MousePos.x >= pos_min.x && MousePos.x <= pos_max.x && MousePos.y >= pos_min.y && MousePos.y <= pos_max.y)
+	{
+		if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+		{
+			ret = true;
+		}
+		hov = true;
+	}
+
+	ImRect bb(pos_min, pos_max);
+	ImVec2 center = bb.GetCenter();
+
+	if(hov)
+		gfDraw->AddCircleFilled(center, ImMax(2.f, (g_pGlob->pFont->FontSize * 1.2f) * 0.5f + 1.f), ImGui::GetColorU32(ret ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered));
+
+	center.x = center.x - 0.5f;
+	center.y = center.y - 0.5f;
+
+	float cross_ex = ((g_pGlob->pFont->FontSize * 1.2f) * 0.5f * 0.7071f - 1.f);
+	ImU32 cross_col = ImGui::GetColorU32(ImGuiCol_Text);
+
+	gfDraw->AddLine(ImVec2(center.x + cross_ex, center.y + cross_ex), ImVec2(center.x + -cross_ex, center.y + -cross_ex), cross_col, 1.0f);
+	gfDraw->AddLine(ImVec2(center.x + cross_ex, center.y + -cross_ex), ImVec2(center.x + -cross_ex, center.y + cross_ex), cross_col, 1.0f);
+
+	return ret;
+}
+
+bool IsMinimiseButtomDown(const ImVec2& MousePos, const ImVec2& pos_min, const ImVec2& pos_max)
+{
+	auto gfDraw = ImGui::GetForegroundDrawList();
+	bool hover = false, held = false;
+
+	if (MousePos.x >= pos_min.x && MousePos.x <= pos_max.x && MousePos.y >= pos_min.y && MousePos.y <= pos_max.y)
+	{
+		if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
+			held = true;
+		}
+		hover = true;
+	}
+
+	ImRect bb(pos_min, pos_max);
+	ImVec2 center = bb.GetCenter();
+
+	if(hover)
+		gfDraw->AddCircleFilled(center, ImMax(2.f, (g_pGlob->pFont->FontSize * 1.2f) * 0.5f + 1.f), ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered));
+
+	center.x = center.x - 0.5f;
+	center.y = center.y - 0.5f;
+
+	ImU32 cross_col = ImGui::GetColorU32(ImGuiCol_Text);
+	float cross_ex = ((g_pGlob->pFont->FontSize * 1.2f) * 0.5f * 0.7071f - 1.f);
+
+	gfDraw->AddLine(ImVec2(center.x + cross_ex, center.y + (cross_ex * 0.5f)), ImVec2(center.x + -cross_ex, center.y + (cross_ex * 0.5f)), cross_col, 1.0f);
+
+	return held;
+}
+
+bool IsMaximiseButtomDown(const ImVec2& MousePos, const ImVec2& pos_min, const ImVec2& pos_max)
+{
+	auto gfDraw = ImGui::GetForegroundDrawList();
+	bool hover = false, held = false;
+
+	if (MousePos.x >= pos_min.x && MousePos.x <= pos_max.x && MousePos.y >= pos_min.y && MousePos.y <= pos_max.y)
+	{
+		if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
+			held = true;
+		}
+		hover = true;
+	}
+
+	ImRect bb(pos_min, pos_max);
+	ImVec2 center = bb.GetCenter();
+
+	if(hover)
+		gfDraw->AddCircleFilled(center, ImMax(2.f, (g_pGlob->pFont->FontSize * 1.2f) * 0.5f + 1.f), ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered));
+
+	center.x = center.x - 0.5f;
+	center.y = center.y - 0.5f;
+
+	ImU32 cross_col = ImGui::GetColorU32(ImGuiCol_Text);
+	float cross_ex = ((g_pGlob->pFont->FontSize * 1.2f) * 0.5f * 0.7071f - 1.f);
+
+	gfDraw->AddLine(ImVec2(center.x + -cross_ex, center.y + -cross_ex), ImVec2(center.x + -cross_ex, center.y + cross_ex), cross_col, 1.0f);
+	gfDraw->AddLine(ImVec2(center.x + -cross_ex, center.y + -cross_ex), ImVec2(center.x + cross_ex, center.y + -cross_ex), cross_col, 1.0f);
+	gfDraw->AddLine(ImVec2(center.x + -cross_ex, center.y + cross_ex), ImVec2(center.x + cross_ex, center.y + cross_ex), cross_col, 1.0f);
+	gfDraw->AddLine(ImVec2(center.x + cross_ex, center.y + cross_ex), ImVec2(center.x + cross_ex, center.y + -cross_ex), cross_col, 1.0f);
+
+	return held;
+}
+}
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR pCommandLine, int nCommandShow)
 {
-	WNDCLASSEXW wc = {	sizeof(wc), 
-						CS_CLASSDC, 
-						WndProc, 
-						0L, 
-						0L, 
-						hInst, 
-						LoadIconA(hInst, MAKEINTRESOURCE(IDI_ICON1)), 
-						nullptr, 
-						nullptr, 
-						nullptr, 
-						L"MyArena_beta", 
-						LoadIconA(hInst, MAKEINTRESOURCE(IDI_ICON1))
-						};
+	WNDCLASSEXW wc;
+	wc.cbSize = sizeof(wc);
+	wc.style = CS_CLASSDC;
+	wc.lpfnWndProc = WndProc;
+	wc.cbClsExtra = 0L;
+	wc.cbWndExtra = 0L;
+	wc.hInstance = hInst;
+	wc.hCursor = nullptr;
+	wc.hbrBackground = nullptr;
+	wc.lpszMenuName = nullptr;
+	wc.lpszClassName = L"MyArena_beta";
+	wc.hIcon = wc.hIconSm = LoadIconA(hInst, MAKEINTRESOURCE(IDI_ICON1));
 
 	VS_FIXEDFILEINFO *pFileInfo = nullptr;
 	HRSRC hRes = FindResource(hInst, MAKEINTRESOURCE(VS_VERSION_INFO), RT_VERSION);
@@ -164,7 +269,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR pCommandLine, int
 	}
 
 	RegisterClassExW(&wc);
-	HWND hWind = CreateWindowW(wc.lpszClassName, L"MyArena", WS_OVERLAPPEDWINDOW, 100, 100, 1280, 800, nullptr, nullptr, wc.hInstance, nullptr);
+	HWND hWind = CreateWindowW(wc.lpszClassName, L"MyArena", WS_POPUP | WS_VISIBLE, 100, 100, 1280, 800, nullptr, nullptr, wc.hInstance, nullptr);
 
 	if (!CreateDeviceD3D(hWind))
 	{
@@ -173,7 +278,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR pCommandLine, int
 		return -1;
 	}
 
-	ShowWindow(hWind, nCommandShow);
+	ShowWindow(hWind, SW_SHOWDEFAULT);
 	UpdateWindow(hWind);
 
 	IMGUI_CHECKVERSION();
@@ -217,6 +322,10 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR pCommandLine, int
 	bool IsShowDebug = true;
 #endif
 
+	bool IsClosePrese = false;
+	bool IsMinimisePrese = false;
+	bool IsMaximisePrese = false;
+
 	PushRenderUI(Showlog,			&IsShowConsoleLog);
 	PushRenderUI(p_controlServer,	&IsShowControlServer);
 	PushRenderUI(gSetting,			&IsShowSetting);
@@ -238,11 +347,14 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR pCommandLine, int
 		if(done)
 			break;
 
-		if (g_ResizeHeight != 0 && g_ResizeWidth != 0)
+		if (g_ResizeHeight > 0 && g_ResizeWidth > 0)
 		{
 			CleanupRenderTarget();
 			g_pSwapChain->ResizeBuffers(0, g_ResizeWidth, g_ResizeHeight, DXGI_FORMAT_UNKNOWN, 0);
-			g_ResizeWidth = g_ResizeHeight = 0;
+
+			g_ResizeWidth = 0;
+			g_ResizeHeight = 0;
+
 			CreateRenderTarget();
 		}
 
@@ -250,103 +362,117 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR pCommandLine, int
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
+		ImGuiWindowFlags win_flags = ImGuiWindowFlags_NoDocking;
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+
+		ImGui::SetNextWindowPos(viewport->WorkPos);
+		ImGui::SetNextWindowSize(viewport->WorkSize);
+		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
+		win_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		win_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_MenuBar;
+
+		const bool isMaximized = IsZoomed(hWind);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, isMaximized ? ImVec2(6.f, 6.f) : ImVec2(1.f, 1.f));
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.f);
+
+		ImGui::Begin("DockSpace Demo", nullptr, win_flags);
+
+		ImGui::PopStyleVar(2);
+		ImGui::PopStyleVar(2);
+
+		ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(50, 50, 50, 255));
+		if(!isMaximized)
+			UI::RenderWindowOuterBorders(ImGui::GetCurrentWindow());
+
+		ImGui::PopStyleColor();
+
+		m_TitleBar = UI::IsMouseHovered(g_pGlob->pIO->MousePos, 
+				ImVec2(viewport->WorkPos.x + 120.f, viewport->WorkPos.y + 2.f), 
+				ImVec2(viewport->WorkPos.x + (ImGui::GetContentRegionAvail().x - 60.f), viewport->WorkPos.y + 18.f));
+
+
+		if (UI::IsCloseButtomDown(g_pGlob->pIO->MousePos, 
+				ImVec2(viewport->WorkPos.x + (ImGui::GetContentRegionAvail().x - 19.f), viewport->WorkPos.y + 2.f), 
+				ImVec2(viewport->WorkPos.x + (ImGui::GetContentRegionAvail().x - 1.f), viewport->WorkPos.y + 18.f)))
 		{
-			ImGuiWindowFlags win_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_MenuBar;
-			const ImGuiViewport* viewport = ImGui::GetMainViewport();
+			SendMessage(hWind, WM_SYSCOMMAND, SC_CLOSE, 0);
+		}
 
-			ImGui::SetNextWindowPos(viewport->WorkPos);
-			ImGui::SetNextWindowSize(viewport->WorkSize);
-			ImGui::SetNextWindowViewport(viewport->ID);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		if (UI::IsMinimiseButtomDown(g_pGlob->pIO->MousePos, 
+				ImVec2(viewport->WorkPos.x + (ImGui::GetContentRegionAvail().x - 59.f), viewport->WorkPos.y + 2.f), 
+				ImVec2(viewport->WorkPos.x + (ImGui::GetContentRegionAvail().x - 41.f), viewport->WorkPos.y + 18.f)))
+		{
+			SendMessage(hWind, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+		}
 
-			win_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-			win_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+		if (UI::IsMaximiseButtomDown(g_pGlob->pIO->MousePos, 
+				ImVec2(viewport->WorkPos.x + (ImGui::GetContentRegionAvail().x - 39.f), viewport->WorkPos.y + 2.f), 
+				ImVec2(viewport->WorkPos.x + (ImGui::GetContentRegionAvail().x - 21.f), viewport->WorkPos.y + 18.f)))
+		{
+			if(isMaximized)
+				SendMessage(hWind, WM_SYSCOMMAND, SC_RESTORE, 0);
+			else
+				SendMessage(hWind, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+		}
 
-			const bool isMaximized = IsZoomed(hWind);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, isMaximized ? ImVec2(6.f, 6.f) : ImVec2(1.f, 1.f));
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
+		if (g_pGlob->pIO->ConfigFlags & ImGuiConfigFlags_DockingEnable)
+		{
+			ImGui::DockSpace(ImGui::GetID("DirectXAppDockSpace"));
+		}
 
-			ImGui::Begin("DockSpace Demo", nullptr, win_flags);
-			ImGui::PopStyleVar(2);
-			ImGui::PopStyleVar(2);
-
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu(gLangManager->GetLang("File")))
 			{
-				ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(50, 50, 50, 255));
+				if (ImGui::MenuItem(gLangManager->GetLang("Server console"), NULL, IsShowConsoleLog)) { IsShowConsoleLog = IsShowConsoleLog ? false : true; }
+				if (ImGui::MenuItem(gLangManager->GetLang("Server management"), NULL, IsShowControlServer)) { IsShowControlServer = IsShowControlServer ? false : true; }
+				if (ImGui::MenuItem(gLangManager->GetLang("Settings"), NULL, IsShowSetting)) { IsShowSetting = IsShowSetting ? false : true; }
+				if (ImGui::MenuItem(gLangManager->GetLang("Exit"))) { done = true; }
 
-				if(!isMaximized)
-					RenderWindowOuterBorders(ImGui::GetCurrentWindow());
-
-				ImGui::PopStyleColor();
+				ImGui::EndMenu();
 			}
-
-			//m_TitleBarHovered = ImGui::IsItemHovered();
-
-			//if (isMaximized)
-			//{
-			//	float winMousePosY = ImGui::GetMousePos().y - ImGui::GetCursorScreenPos().y;
-			//	if (winMousePosY >= 0.f && winMousePosY <= 5.f)
-			//	{
-			//		m_TitleBarHovered = true;
-			//	}
-			//}
-
-			if (g_pGlob->pIO->ConfigFlags & ImGuiConfigFlags_DockingEnable)
+			if (ImGui::BeginMenu(gLangManager->GetLang("Help")))
 			{
-				ImGui::DockSpace(ImGui::GetID("DirectXAppDockspace"));
+				if (ImGui::MenuItem(gLangManager->GetLang("About"), NULL, IsShowAbout)) { IsShowAbout = IsShowAbout ? false : true; }
+
+				ImGui::EndMenu();
 			}
+			ImGui::EndMenuBar();
+		}
 
-			if (ImGui::BeginMenuBar())
-			{
-				if (ImGui::BeginMenu(gLangManager->GetLang("File")))
-				{
-					if (ImGui::MenuItem(gLangManager->GetLang("Server console"), NULL, IsShowConsoleLog)) { IsShowConsoleLog = IsShowConsoleLog ? false : true; }
-					if (ImGui::MenuItem(gLangManager->GetLang("Server management"), NULL, IsShowControlServer)) { IsShowControlServer = IsShowControlServer ? false : true; }
-					if (ImGui::MenuItem(gLangManager->GetLang("Settings"), NULL, IsShowSetting)) { IsShowSetting = IsShowSetting ? false : true; }
-					if (ImGui::MenuItem(gLangManager->GetLang("Exit"))) { done = true; }
+		if (IsShowAbout)
+		{
+			ImVec2 vCenter = ImGui::GetMainViewport()->GetCenter();
+			ImGui::SetNextWindowPos(vCenter, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+			ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_Always);
 
-					ImGui::EndMenu();
-				}
-				if (ImGui::BeginMenu(gLangManager->GetLang("Help")))
-				{
-					if (ImGui::MenuItem(gLangManager->GetLang("About"), NULL, IsShowAbout)) { IsShowAbout = IsShowAbout ? false : true; }
+			ImGui::Begin(gLangManager->GetLang("About"), &IsShowAbout);
 
-					ImGui::EndMenu();
-				}
-				ImGui::EndMenuBar();
-			}
+			ImGui::Text(gLangManager->GetLang("Version of the components used in the program:"));
 
-			if (IsShowAbout)
-			{
-				ImVec2 vCenter = ImGui::GetMainViewport()->GetCenter();
-				ImGui::SetNextWindowPos(vCenter, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-				ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_Always);
+			ImGui::Text("ImGui ver: %s", IMGUI_VERSION);
+			ImGui::Text("CURL  ver: %s", LIBCURL_VERSION);
+			ImGui::Text("RAPIDJSON: %s", RAPIDJSON_VERSION_STRING);
+			if(pFileInfo != nullptr)
+				ImGui::Text("Version program: %d.%d.%d.%d", HIWORD(pFileInfo->dwFileVersionMS), LOWORD(pFileInfo->dwFileVersionMS), HIWORD(pFileInfo->dwFileVersionLS), LOWORD(pFileInfo->dwFileVersionLS));
 
-				ImGui::Begin(gLangManager->GetLang("About"), &IsShowAbout);
-
-				ImGui::Text(gLangManager->GetLang("Version of the components used in the program:"));
-
-				ImGui::Text("ImGui ver: %s", IMGUI_VERSION);
-				ImGui::Text("CURL  ver: %s", LIBCURL_VERSION);
-				ImGui::Text("RAPIDJSON: %s", RAPIDJSON_VERSION_STRING);
-				if(pFileInfo != nullptr)
-					ImGui::Text("Version program: %d.%d.%d.%d", HIWORD(pFileInfo->dwFileVersionMS), LOWORD(pFileInfo->dwFileVersionMS), HIWORD(pFileInfo->dwFileVersionLS), LOWORD(pFileInfo->dwFileVersionLS));
-
-				ImGui::SetCursorPos(ImVec2((300.f - 80.f) * 0.5f, (200.f + 100.f) * 0.5f));
-				if(ImGui::Button("Ok", ImVec2(80, 0)))
-					IsShowAbout = false;
-				ImGui::End();
-			}
-
-#ifndef IMGUI_DISABLE_DEBUG_TOOLS
-			if(IsShowDebug)
-				ImGui::ShowDebugLogWindow(&IsShowDebug);
-#endif
-			for(auto UI_Render : m_RenderSteck)
-				UI_Render->OnUIRender();
-			
+			ImGui::SetCursorPos(ImVec2((300.f - 80.f) * 0.5f, (200.f * 1.5f) * 0.5f));
+			if(ImGui::Button("Ok", ImVec2(80, 0)))
+				IsShowAbout = false;
 			ImGui::End();
 		}
+
+#ifndef IMGUI_DISABLE_DEBUG_TOOLS
+		if(IsShowDebug)
+			ImGui::ShowDebugLogWindow(&IsShowDebug);
+#endif
+		for(auto UI_Render : m_RenderSteck)
+			UI_Render->OnUIRender();
+			
+		ImGui::End();
 
 		ImGui::Render();
 		const float clear_color_with_alpha[4] = {clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w};
@@ -437,112 +563,94 @@ void CleanupRenderTarget()
 	if (g_mainRenderTargetView) { g_mainRenderTargetView->Release(); g_mainRenderTargetView = nullptr; }
 }
 
-
 void PushRenderUI(CUIRender* UI, bool *IsOpen)
 {
 	m_RenderSteck.emplace_back(UI);
 	UI->OnAttach(IsOpen);
 }
 
-//#include <windowsx.h>
-//#include <uxtheme.h>
-//#include <dwmapi.h>
-
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	//static RECT border_thickness = { 4, 4, 4, 4 };
-	//BOOL hasThickFrame = GetWindowLongPtr(hWnd, GWL_STYLE) & WS_THICKFRAME;
-
 	if(ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
 		return true;
 
 	switch (msg)
 	{
-	//case WM_CREATE:
-	//{
-	//	if (hasThickFrame)
-	//	{
-	//		RECT size_rect;
-	//		GetWindowRect(hWnd, &size_rect);
+	case WM_NCHITTEST:
+	{
+		POINT pt = { ((int)(short)LOWORD(lParam)), ((int)(short)HIWORD(lParam)) };
 
-	//		// Inform the application of the frame change to force redrawing with the new
-	//		// client area that is extended into the title bar
-	//		SetWindowPos(
-	//			hWnd, NULL,
-	//			size_rect.left, size_rect.top,
-	//			size_rect.right - size_rect.left, size_rect.bottom - size_rect.top,
-	//			SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE
-	//		);
-	//		break;
-	//	}
+		// Переводимо координати миші в координати вікна
+		ScreenToClient(hWnd, &pt);
 
-	//	break;
-	//}
-	//case WM_NCCALCSIZE:
-	//{
-	//	if(!wParam || !hasThickFrame)
-	//		break;
+		RECT rc;
+		GetClientRect(hWnd, &rc);
 
-	//	const int resizeBorderX = GetSystemMetrics(SM_CXFRAME);
-	//	const int resizeBorderY = GetSystemMetrics(SM_CYFRAME);
+		if (!IsZoomed(hWnd))
+		{
+			RECT rc;
+			GetClientRect(hWnd, &rc);
 
-	//	NCCALCSIZE_PARAMS *params = (NCCALCSIZE_PARAMS*)lParam;
-	//	RECT *rectClient = params->rgrc;
+			enum { left = 1, top = 2, right = 4, bottom = 8 };
+			int hit = 0;
+			if (pt.x <= 4)
+				hit |= left;
+			if (pt.x >= rc.right - 4)
+				hit |= right;
+			if (pt.y <= 4 || pt.y < GetSystemMetrics(SM_CYFRAME))
+				hit |= top;
+			if (pt.y >= rc.bottom - 4)
+				hit |= bottom;
 
-	//	rectClient->right -= resizeBorderX;
-	//	rectClient->left += resizeBorderX;
-	//	rectClient->bottom -= resizeBorderY;
-	//	rectClient->top += 0;
+			if (hit & top && hit & left)        return HTTOPLEFT;
+			if (hit & top && hit & right)       return HTTOPRIGHT;
+			if (hit & bottom && hit & left)     return HTBOTTOMLEFT;
+			if (hit & bottom && hit & right)    return HTBOTTOMRIGHT;
+			if (hit & left)                     return HTLEFT;
+			if (hit & top)                      return HTTOP;
+			if (hit & right)                    return HTRIGHT;
+			if (hit & bottom)                   return HTBOTTOM;
+		}
 
-	//	return WVR_ALIGNTOP | WVR_ALIGNLEFT;
-	//}
-	//case WM_NCHITTEST:
-	//{
-	//	if(!hasThickFrame)
-	//		break;
+		if (m_TitleBar)
+		{
+			return HTCAPTION;
+		}
 
-	//	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-	//	ScreenToClient(hWnd, &pt);
-
-	//	if(!IsZoomed(hWnd))
-	//	{
-	//		RECT rc;
-	//		GetClientRect(hWnd, &rc);
-
-	//		const int verticBordenSize = GetSystemMetrics(SM_CYFRAME);
-
-	//		enum { left = 1, top = 2, right = 4, bottom = 8 };
-	//		int hit = 0;
-	//		if (pt.x <= border_thickness.left)								hit |= left;
-	//		if (pt.x >= rc.right - border_thickness.right)					hit |= right;
-	//		if (pt.y <= border_thickness.top || pt.y < verticBordenSize)	hit |= top;
-	//		if (pt.y >= rc.bottom - border_thickness.bottom)				hit |= bottom;
-
-	//		if (hit & top && hit & left)        return HTTOPLEFT;
-	//		if (hit & top && hit & right)       return HTTOPRIGHT;
-	//		if (hit & bottom && hit & left)     return HTBOTTOMLEFT;
-	//		if (hit & bottom && hit & right)    return HTBOTTOMRIGHT;
-	//		if (hit & left)                     return HTLEFT;
-	//		if (hit & top)                      return HTTOP;
-	//		if (hit & right)                    return HTRIGHT;
-	//		if (hit & bottom)                   return HTBOTTOM;
-	//	}
-
-	//	if(m_TitleBarHovered)
-	//		return HTCAPTION;
-
-	//	return HTCLIENT;
-	//}
+		return HTCLIENT;
+	}
 	case WM_SIZE:
-		if(wParam == SIZE_MINIMIZED)
-			return 0;
+	{
+		if (wParam != SIZE_MINIMIZED)
+		{
+			g_ResizeWidth = (UINT)LOWORD(lParam);
+			g_ResizeHeight = (UINT)HIWORD(lParam);
+		}
 
-		g_ResizeWidth = (UINT)LOWORD(lParam);
-		g_ResizeHeight = (UINT)HIWORD(lParam);
 		return 0;
+	}
 	case WM_SYSCOMMAND:
-		if((wParam & 0xfff) == SC_KEYMENU)
-			return 0;
+		switch (wParam & 0xfff0)
+		{
+			case SC_MINIMIZE:
+			{
+				ShowWindow(hWnd, SW_MINIMIZE);
+				UpdateWindow(hWnd);
+				break;
+			}
+			case SC_MAXIMIZE:
+			{
+				ShowWindow(hWnd, SW_MAXIMIZE);
+				break;
+			}
+			case SC_RESTORE:
+			{
+				ShowWindow(hWnd, SW_RESTORE);
+				break;
+			}
+			case SC_KEYMENU:
+				return 0;
+		}
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
@@ -551,7 +659,11 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DpiEnableScaleViewports)
 		{
 			const RECT* suggested_rect = (RECT*)lParam;
-			SetWindowPos(hWnd, nullptr, suggested_rect->left, suggested_rect->top, suggested_rect->right - suggested_rect->left, suggested_rect->bottom - suggested_rect->top, SWP_NOZORDER | SWP_NOACTIVATE);
+			SetWindowPos(hWnd, nullptr, 
+			suggested_rect->left, suggested_rect->top, 
+			suggested_rect->right - suggested_rect->left, 
+			suggested_rect->bottom - suggested_rect->top, 
+			SWP_NOZORDER | SWP_NOACTIVATE);
 		}
 		break;
 	}

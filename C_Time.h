@@ -77,7 +77,8 @@ private:
 	double g_fTimerThink;
 	float m_fLastTickedTime;
 
-	std::vector<ITimer *> mLoopTimer;
+	std::vector<ITimer *>	mLoopTimer;
+	std::mutex				mMutex;
 };
 
 extern C_Timer *timer;

@@ -38,6 +38,7 @@ C_Timer::C_Timer() : m_fLastTickedTime(0.f), g_fTimerThink(0.f), g_fUniversalTim
 
 C_Timer::~C_Timer()
 {
+	std::lock_guard<std::mutex> Lock(mMutex);
 	for (auto iter = mLoopTimer.begin(); iter != mLoopTimer.end(); iter++)
 	{
 		delete(*iter);
@@ -63,6 +64,7 @@ void C_Timer::RunFrame()
 	double curtime = getSimulateTime();
 
 	TimerResult res;
+	std::unique_lock<std::mutex> Lock(mMutex);
 	for (auto iter = mLoopTimer.begin(); iter != mLoopTimer.end(); )
 	{
 		pTimer = (*iter);
@@ -75,7 +77,6 @@ void C_Timer::RunFrame()
 				pTimer->mListener->OnTimerEnd(pTimer->m_pData);
 				iter = mLoopTimer.erase(iter);
 				delete pTimer;
-				pTimer = nullptr;
 				continue;
 			}
 			pTimer->mInExec = false;
@@ -87,8 +88,9 @@ void C_Timer::RunFrame()
 	}
 }
 
-ITimer * C_Timer::CreateTimer(ITimerEvent * pCallBack, float fInterval, void * pData)
+ITimer *C_Timer::CreateTimer(ITimerEvent * pCallBack, float fInterval, void * pData)
 {
+	std::unique_lock<std::mutex> Lock(mMutex);
 	ITimer *pTimer = new ITimer();
 	float to_exec = static_cast<float>(getSimulateTime()) + fInterval;
 
@@ -101,6 +103,7 @@ ITimer * C_Timer::CreateTimer(ITimerEvent * pCallBack, float fInterval, void * p
 
 void C_Timer::KillTimer(ITimer * pTimer)
 {
+	std::unique_lock<std::mutex> Lock(mMutex);
 	if (pTimer->mKillMe)
 		return;
 
@@ -109,6 +112,7 @@ void C_Timer::KillTimer(ITimer * pTimer)
 		pTimer->mKillMe = true;
 		return;
 	}
+
 
 	pTimer->mInExec = true;
 	pTimer->mListener->OnTimerEnd(pTimer->m_pData);
@@ -119,7 +123,6 @@ void C_Timer::KillTimer(ITimer * pTimer)
 		{
 			iter = mLoopTimer.erase(iter);
 			delete pTimer;
-			pTimer = nullptr;
 			break;
 		}
 	}

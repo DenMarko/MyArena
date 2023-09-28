@@ -114,10 +114,10 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\..\..\Downloads\settings_database_icon_251072.ico">
+    <Image Include="resurce\d_image.bmp">
       <Filter>Файлы ресурсов</Filter>
     </Image>
-    <Image Include="resurce\d_image.bmp">
+    <Image Include="resurce\settings_database_icon_251072.ico">
       <Filter>Файлы ресурсов</Filter>
     </Image>
   </ItemGroup>
