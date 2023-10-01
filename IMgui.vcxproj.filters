@@ -63,6 +63,9 @@
     <ClCompile Include="F:\source\imgui-docking\backends\imgui_impl_win32.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="CMain.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C_Time.h">
@@ -106,6 +109,12 @@
     </ClInclude>
     <ClInclude Include="F:\source\imgui-docking\imgui_internal.h">
       <Filter>ImGui_docking</Filter>
+    </ClInclude>
+    <ClInclude Include="CMain.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="CException.h">
+      <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -20,7 +20,7 @@ double C_Time::GetTime()
 
 #define TIMER_MIN_ACCURACY		0.1f
 
-void ITimer::Initialize(ITimerEvent * pCallBack, float fInterval, float fToExec, void * pData)
+void ITimer::Initialize(const std::shared_ptr<ITimerEvent> &pCallBack, float fInterval, float fToExec, void * pData)
 {
 	mListener = pCallBack;
 	mInterval = fInterval;
@@ -31,7 +31,7 @@ void ITimer::Initialize(ITimerEvent * pCallBack, float fInterval, float fToExec,
 	mKillMe = false;
 }
 
-C_Timer *timer = new C_Timer();
+std::unique_ptr<C_Timer> timer(std::make_unique<C_Timer>());
 C_Timer::C_Timer() : m_fLastTickedTime(0.f), g_fTimerThink(0.f), g_fUniversalTime(0.f)
 {
 }
@@ -88,7 +88,7 @@ void C_Timer::RunFrame()
 	}
 }
 
-ITimer *C_Timer::CreateTimer(ITimerEvent * pCallBack, float fInterval, void * pData)
+ITimer *C_Timer::CreateTimer(const std::shared_ptr<ITimerEvent> &pCallBack, float fInterval, void * pData)
 {
 	std::unique_lock<std::mutex> Lock(mMutex);
 	ITimer *pTimer = new ITimer();

@@ -37,7 +37,10 @@ CSetting::CSetting()
 						if (doc["token"].IsString())
 						{
 							_glob_.token.append(decrypt(string(doc["token"].GetString()), 3));
-							_glob_.IsTocken = true;
+							if (_glob_.token.size() > 0)
+							{
+								_glob_.IsTocken = true;
+							}
 						}
 					}
 					if(doc.HasMember("FontSize"))
@@ -204,12 +207,12 @@ void CSetting::SetStile()
 
 	if (_glob_.pIO->ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
-		style.WindowRounding = 0.f;
+		style.WindowRounding = 2.f;
 		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 	}
 
-	style.FrameRounding = 2;
-	style.GrabRounding = 2;
+	style.FrameRounding = 2.f;
+	style.GrabRounding = 2.f;
 }
 
 void CSetting::OnAttach(bool *Is_Open) { IsOpen = Is_Open; }

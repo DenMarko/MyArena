@@ -9,7 +9,7 @@ class CShowConsoleLog : public ITimerEvent,
 						public CUIRender
 {
 public:
-	CShowConsoleLog(C_CUrl *url) : p_gUrl(url)
+	CShowConsoleLog()
 	{
 		memset(InputBuf, 0, sizeof(InputBuf));
 		HistoryPos = -1;
@@ -34,8 +34,8 @@ public:
 
 	virtual void OnUIRender() override;
 
-	virtual TimerResult OnTimer(void *pData);
-	virtual void OnTimerEnd(void *pData) {}
+	virtual TimerResult OnTimer(void *pData) override;
+	virtual void OnTimerEnd(void *pData) override {}
 
 private:
 	static int	TextEditCallbackStub(ImGuiInputTextCallbackData* data)
@@ -71,7 +71,6 @@ private:
 
 	int				TextEditCallback(ImGuiInputTextCallbackData* data);
 
-	C_CUrl				*p_gUrl;
 	ImGuiTextBuffer		lBuf;
 	ImVector<int>		LineOffsets;
 	ImVector<char*>		History;

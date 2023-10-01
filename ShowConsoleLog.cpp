@@ -193,7 +193,7 @@ int CShowConsoleLog::TextEditCallback(ImGuiInputTextCallbackData* data)
 
 TimerResult CShowConsoleLog::OnTimer(void *pData)
 {
-	auto *con_log = reinterpret_cast<GetConsole *>(p_gUrl->GetData(COMMAND_GET_CONSOLE));
+	auto *con_log = reinterpret_cast<GetConsole *>(pUrls->GetData(COMMAND_GET_CONSOLE));
 
 	if(con_log == nullptr)
 		return Time_Continue;

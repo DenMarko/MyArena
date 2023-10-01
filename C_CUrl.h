@@ -5,6 +5,7 @@
 #include "imgui.h"
 #include "CSetting.h"
 #include "CNotification.h"
+#include "CException.h"
 
 enum COMAND {
 	COMMAND_STOP = 0,
@@ -20,6 +21,21 @@ enum COMAND {
 
 class C_CUrl : public CUIRender
 {
+	class Exception : public CBaseException
+	{
+	public:
+		Exception(const char *file, int line, const char *note) : CBaseException(file, line, note)
+		{}
+		virtual std::string GetFullMessage() const override
+		{
+			return GetNote() + "\nAt: " + GetLocation();
+		}
+		virtual std::string GetExceptionType() const override
+		{
+			return "CURL Exception";
+		}
+	};
+
 public:
 	C_CUrl();
 	~C_CUrl();
@@ -41,7 +57,7 @@ private:
 	void CheckBedTocken()
 	{
 		CountBedTocken++;
-		if (CountBedTocken > 5)
+		if (CountBedTocken >= 5)
 		{
 			g_pGlob->token.clear();
 			g_pGlob->IsTocken = false;
@@ -178,4 +194,4 @@ private:
 	char buffer[256];
 };
 
-extern C_CUrl *pUrls;
+extern shared_ptr<C_CUrl> pUrls;

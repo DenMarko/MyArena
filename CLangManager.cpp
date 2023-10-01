@@ -1,8 +1,15 @@
 #include "CLangManager.h"
 #include "CSetting.h"
 
-CLangManager LangManager;
-CLangManager *gLangManager = &LangManager;
+unique_ptr<CLangManager> gLangManager = make_unique<CLangManager>();
+
+struct CPrtCmp
+{
+	bool operator() (const char *str1, const char *str2) const
+	{
+		return strcmp(str1, str2) < 0;
+	}
+};
 
 map<const char*, const char*, CPrtCmp> LangUa = 
 {

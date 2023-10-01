@@ -4,9 +4,8 @@
 #include "stb_image.h"
 #include "resource.h"
 
-CControlServer::CControlServer(ID3D11Device* pDevice, C_CUrl *p_Url) : 
+CControlServer::CControlServer(ID3D11Device* pDevice) : 
 g_pDevice(pDevice),
-p_gUrl(p_Url),
 p_gMaps(nullptr),
 p_gStatus(nullptr),
 Status(nullptr),
@@ -14,8 +13,8 @@ im_texture(nullptr),
 im_texture_url(nullptr),
 IsStatusReady(true)
 {
-	p_gStatus = reinterpret_cast<GetStatus *>(p_gUrl->GetData(COMAND::COMMAND_STATUS));
-	p_gMaps = reinterpret_cast<GetMapList *>(p_gUrl->GetData(COMAND::COMMAND_GET_MAPS));
+	p_gStatus = reinterpret_cast<GetStatus *>(pUrls->GetData(COMAND::COMMAND_STATUS));
+	p_gMaps = reinterpret_cast<GetMapList *>(pUrls->GetData(COMAND::COMMAND_GET_MAPS));
 
 	int iX = 0;
 	int iY = 0;
@@ -26,7 +25,7 @@ IsStatusReady(true)
 		prevMap.append(p_gStatus->data->mapname);
 
 		std::vector<char> gImgMap;
-		p_gUrl->LoadImageMap(p_gStatus->MapImg, &gImgMap);
+		pUrls->LoadImageMap(p_gStatus->MapImg, &gImgMap);
 		if (stbi_info_from_memory(reinterpret_cast<const unsigned char*>(gImgMap.data()), gImgMap.size(), &iX, &iY, &iComp))
 		{
 			IMGUI_DEBUG_LOG("Image info: X[%d] Y[%d] comp[%d]\n", iX, iY, iComp);
@@ -185,7 +184,7 @@ void CControlServer::OnUIRender()
 		{
 			if (p_gStatus->online == 0)
 			{
-				auto res = reinterpret_cast<CmdResult *>(p_gUrl->GetData(COMAND::COMMAND_START));
+				auto res = reinterpret_cast<CmdResult *>(pUrls->GetData(COMAND::COMMAND_START));
 
 				if (res->status == STATUS::STATUS_OK)
 				{
@@ -204,7 +203,7 @@ void CControlServer::OnUIRender()
 		{
 			if (p_gStatus->online == 1)
 			{
-				auto res = reinterpret_cast<CmdResult *>(p_gUrl->GetData(COMAND::COMMAND_STOP));
+				auto res = reinterpret_cast<CmdResult *>(pUrls->GetData(COMAND::COMMAND_STOP));
 
 				if (res->status == STATUS::STATUS_OK)
 				{
@@ -223,7 +222,7 @@ void CControlServer::OnUIRender()
 		{
 			if (p_gStatus->online == 1)
 			{
-				auto res = reinterpret_cast<CmdResult *>(p_gUrl->GetData(COMAND::COMMAND_RESTART));
+				auto res = reinterpret_cast<CmdResult *>(pUrls->GetData(COMAND::COMMAND_RESTART));
 
 				if (res->status == STATUS::STATUS_OK)
 				{
@@ -268,7 +267,7 @@ void CControlServer::OnUIRender()
 				if(ImGui::Selectable(str.c_str(), is_select))
 				{
 					item_cur_id = n;
-					auto res = reinterpret_cast<CmdResult *>(p_gUrl->GetData(COMAND::COMMAND_CHANGE_LEVEL, str.c_str()));
+					auto res = reinterpret_cast<CmdResult *>(pUrls->GetData(COMAND::COMMAND_CHANGE_LEVEL, str.c_str()));
 					if (res->status == STATUS::STATUS_OK)
 					{
 						g_pNotif->Notificatio(u8"%s", res->msg.c_str());
@@ -329,7 +328,7 @@ TimerResult CControlServer::OnTimer(void *pData)
 {
 	IsStatusReady = false;
 
-	Status = reinterpret_cast<GetStatus *>(p_gUrl->GetData(COMAND::COMMAND_STATUS));
+	Status = reinterpret_cast<GetStatus *>(pUrls->GetData(COMAND::COMMAND_STATUS));
 	if (Status == nullptr)
 	{
 		IsStatusReady = true;
@@ -343,7 +342,7 @@ TimerResult CControlServer::OnTimer(void *pData)
 		return Time_Continue;
 	}
 
-	if (p_gMaps == nullptr) { p_gMaps = reinterpret_cast<GetMapList *>(p_gUrl->GetData(COMAND::COMMAND_GET_MAPS)); }
+	if (p_gMaps == nullptr) { p_gMaps = reinterpret_cast<GetMapList *>(pUrls->GetData(COMAND::COMMAND_GET_MAPS)); }
 	if (prevMap != Status->data->mapname)
 	{
 		prevMap = Status->data->mapname;
@@ -353,7 +352,7 @@ TimerResult CControlServer::OnTimer(void *pData)
 		int iY = 0;
 		int iComp = 0;
 		std::vector<char> gImgMap;
-		p_gUrl->LoadImageMap(Status->MapImg, &gImgMap);
+		pUrls->LoadImageMap(Status->MapImg, &gImgMap);
 		if (stbi_info_from_memory(reinterpret_cast<const unsigned char*>(gImgMap.data()), gImgMap.size(), &iX, &iY, &iComp))
 		{
 			IMGUI_DEBUG_LOG("Image info: X[%d] Y[%d] comp[%d]\n", iX, iY, iComp);

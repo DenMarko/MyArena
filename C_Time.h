@@ -30,15 +30,17 @@ enum TimerResult
 class ITimerEvent
 {
 public:
+	virtual ~ITimerEvent() = default;
+
 	virtual TimerResult OnTimer(void *pData) = 0;
 	virtual void OnTimerEnd(void *pData) = 0;
 };
 
-class ITimer 
+class ITimer
 {
 public:
-	void Initialize(ITimerEvent *pCallBack, float fInterval, float fToExec, void *pData);
-	ITimerEvent *mListener;
+	void Initialize(const std::shared_ptr<ITimerEvent> &pCallBack, float fInterval, float fToExec, void *pData);
+	std::shared_ptr<ITimerEvent> mListener;
 	void *m_pData;
 	float mInterval;
 	float fSetNewInterval;
@@ -57,7 +59,7 @@ public:
 
 public:
 	void GlobalFrame(double times);
-	ITimer *CreateTimer(ITimerEvent* pCallBack, float fInterval, void *pData);
+	ITimer *CreateTimer(const std::shared_ptr<ITimerEvent> &pCallBack, float fInterval, void *pData);
 	void KillTimer(ITimer* pTimer);
 private:
 	void RunFrame();
@@ -77,8 +79,8 @@ private:
 	double g_fTimerThink;
 	float m_fLastTickedTime;
 
-	std::vector<ITimer *>	mLoopTimer;
+	std::vector<ITimer*>	mLoopTimer;
 	std::mutex				mMutex;
 };
 
-extern C_Timer *timer;
+extern std::unique_ptr<C_Timer> timer;

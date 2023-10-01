@@ -12,14 +12,14 @@ public:
 	CNotification() : ShowNotification(false)
 	{}
 
-	virtual TimerResult OnTimer(void *pData)
+	virtual TimerResult OnTimer(void *pData) override
 	{
 		ShowNotification = false;
 		msg.clear();
 
 		return TimerResult::Time_Stop;
 	}
-	virtual void OnTimerEnd(void *pData)
+	virtual void OnTimerEnd(void *pData) override
 	{}
 
 	virtual void OnAttach(bool *IsOpen) override {}
@@ -35,4 +35,4 @@ private:
 	bool ShowNotification;
 };
 
-extern CNotification *g_pNotif;
+extern shared_ptr<CNotification> g_pNotif;

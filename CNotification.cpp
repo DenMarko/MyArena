@@ -1,7 +1,6 @@
 #include "CNotification.h"
 
-CNotification mNotif;
-CNotification *g_pNotif = &mNotif;
+shared_ptr<CNotification> g_pNotif(make_shared<CNotification>());
 
 void CNotification::OnUIRender()
 {
@@ -35,7 +34,7 @@ bool CNotification::Notificatio(const char *cMsg, ...)
 		va_end(args);
 
 		ShowNotification = true;
-		timer->CreateTimer(this, 3.f, nullptr);
+		timer->CreateTimer(g_pNotif, 3.f, nullptr);
 	}
 	return true;
 }

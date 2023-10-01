@@ -9,7 +9,7 @@ class CControlServer : public ITimerEvent,
 						public CUIRender
 {
 public:
-	CControlServer(ID3D11Device* pDevice, C_CUrl *p_Url);
+	CControlServer(ID3D11Device* pDevice);
 	~CControlServer()
 	{
 		delete p_gStatus;
@@ -34,8 +34,8 @@ public:
 
 	virtual void OnUIRender() override;
 
-	virtual TimerResult OnTimer(void *pData);
-	virtual void OnTimerEnd(void *pData)
+	virtual TimerResult OnTimer(void *pData) override;
+	virtual void OnTimerEnd(void *pData) override
 	{}
 
 private:
@@ -52,7 +52,6 @@ private:
 
 	ID3D11Device	*g_pDevice;
 
-	C_CUrl			*p_gUrl;
 	GetStatus		*p_gStatus;
 	GetStatus		*Status;
 	GetMapList		*p_gMaps;

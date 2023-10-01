@@ -12,14 +12,6 @@ enum LANG
 	EN
 };
 
-struct CPrtCmp
-{
-	bool operator() (const char *str1, const char *str2) const
-	{
-		return strcmp(str1, str2) < 0;
-	}
-};
-
 class CLangManager
 {
 public:
@@ -29,4 +21,4 @@ public:
 	const char *GetLang(const char *) const;
 };
 
-extern CLangManager *gLangManager;
+extern unique_ptr<CLangManager> gLangManager;

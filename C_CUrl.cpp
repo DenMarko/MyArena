@@ -2,8 +2,7 @@
 #include <document.h>
 #include <error/en.h>
 
-C_CUrl p_Urls;
-C_CUrl *pUrls = &p_Urls;
+shared_ptr<C_CUrl> pUrls(make_shared<C_CUrl>());
 
 C_CUrl::C_CUrl() : IsOpen(true)
 {
@@ -11,6 +10,8 @@ C_CUrl::C_CUrl() : IsOpen(true)
 
 	curl_global_init(CURL_GLOBAL_ALL);
 	pUrl = curl_easy_init();
+	if(pUrl == nullptr)
+		throw Exception(__FILE__, __LINE__, "Failed to create valid curl handle.");
 }
 
 C_CUrl::~C_CUrl()
@@ -725,14 +726,14 @@ void *C_CUrl::GetParseStatus(std::vector<char> &user)
 class TimeCallBack : public ITimerEvent
 {
 public:
-	virtual TimerResult OnTimer(void *pData)
+	virtual TimerResult OnTimer(void *pData) override
 	{
 		(reinterpret_cast<atomic<bool>*>(pData))->store(true);
 		return TimerResult::Time_Stop;
 	}
-	virtual void OnTimerEnd(void *pData)
+	virtual void OnTimerEnd(void *pData) override
 	{}
-} TimeCall;
+};
 
 void C_CUrl::OnUIRender()
 {
@@ -775,7 +776,7 @@ void C_CUrl::OnUIRender()
 				{
 					ImGui::CloseCurrentPopup();
 					g_pNotif->Notificatio(res->msg.c_str());
-					timer->CreateTimer(&TimeCall, 3.2f, &IsOpen);
+					timer->CreateTimer(make_shared<TimeCallBack>(), 3.2f, &IsOpen);
 				}
 				delete res;
 			}
