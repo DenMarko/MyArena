@@ -9,6 +9,7 @@
 #include "C_CUrl.h"
 #include "CNotification.h"
 #include "CSetting.h"
+#include "CListServer.h"
 #include "CException.h"
 #include "resource.h"
 
@@ -96,8 +97,6 @@ namespace SpaceMain
 		ID3D11RenderTargetView*  g_mainRenderTargetView;
 
 		bool done;
-		bool IsShowConsoleLog;
-		bool IsShowControlServer;
 		bool IsShowSetting;
 		bool IsShowAbout;
 #ifndef IMGUI_DISABLE_DEBUG_TOOLS
@@ -107,6 +106,8 @@ namespace SpaceMain
 		shared_ptr<CSetting> gSetting;
 		shared_ptr<CControlServer> p_controlServer;
 		shared_ptr<CShowConsoleLog> Showlog;
+		shared_ptr<CListServer> gListServer;
+
 		unique_ptr<_threat> th;
 
 		VS_FIXEDFILEINFO *pFileInfo;

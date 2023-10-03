@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CLangManager.cpp" />
+    <ClCompile Include="CListServer.cpp" />
     <ClCompile Include="CMain.cpp" />
     <ClCompile Include="CNotification.cpp" />
     <ClCompile Include="CSetting.cpp" />
@@ -159,6 +160,7 @@
     <ClInclude Include="APIInterface.h" />
     <ClInclude Include="CException.h" />
     <ClInclude Include="CLangManager.h" />
+    <ClInclude Include="CListServer.h" />
     <ClInclude Include="CMain.h" />
     <ClInclude Include="CNotification.h" />
     <ClInclude Include="CSetting.h" />

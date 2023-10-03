@@ -28,8 +28,8 @@ public:
 		}
 	}
 
-
-	virtual void OnAttach(bool *IsOpen) override { Is_open = IsOpen; }
+public:
+	virtual void OnAttach(bool *IsOpen) override {}
 	virtual void OnDetach() override {}
 
 	virtual void OnUIRender() override;
@@ -58,5 +58,4 @@ private:
 	std::string		prevMap;
 
 	atomic<bool>	IsStatusReady;
-	bool*			Is_open;
 };

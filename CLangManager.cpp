@@ -13,6 +13,7 @@ struct CPrtCmp
 
 map<const char*, const char*, CPrtCmp> LangUa = 
 {
+	{"Server information",				u8"Інформація о сервере"},
 	{"Server management",				u8"Управління сервером"},
 	{"Status: Disabled",				u8"Статус: Вимкнений"},
 	{"Status: Enabled",					u8"Статус: Увімкнений"},
@@ -67,9 +68,19 @@ map<const char*, const char*, CPrtCmp> LangUa =
 	{"Version of the components used in the program:", u8"Версія компонентів,\r\nщо використовуються в програмі:"},
 	{"About",							u8"Про програму"},
 	{"Help",							u8"Справка"},
+
+	{"List of servers",					u8"Список серверів"},
+	{"Server name",						u8"Ім'я сервера"},
+	{"Active",							u8"Активний"},
+	{"Not active",						u8"Неактивний"},
+	{"Activate",						u8"Активувати"},
+	{"Remove",							u8"Видалити"},
+	{"Add server",						u8"Добавити сервер"}
 };
+
 map<const char*, const char*, CPrtCmp> LangRu = 
 {	
+	{"Server information",				u8"Информация о сервере"},
 	{"Server management",				u8"Управление сервером"},
 	{"Status: Disabled",				u8"Статус: Отключен"},
 	{"Status: Enabled",					u8"Статус: Включен"},
@@ -124,6 +135,14 @@ map<const char*, const char*, CPrtCmp> LangRu =
 	{"Version of the components used in the program:", u8"Версия компонентов,\r\nиспользуемых в программе:"},
 	{"About",							u8"О програме"},
 	{"Help",							u8"Справка"},
+
+	{"List of servers",					u8"Список серверов"},
+	{"Server name",						u8"Имя сервера"},
+	{"Active",							u8"Активный"},
+	{"Not active",						u8"Не активен"},
+	{"Activate",						u8"Активировать"},
+	{"Remove",							u8"Удалить"},
+	{"Add server",						u8"Добавить сервер"}
 };
 
 const char *CLangManager::GetLang(const char *str) const

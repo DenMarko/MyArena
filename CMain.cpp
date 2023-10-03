@@ -10,15 +10,11 @@ bool m_TitleBar = false;
 
 bool IsReadiWindow = false;
 
-CMain::CMain(HINSTANCE hInst, int Width, int Height) : gSetting(nullptr),
-	p_controlServer(nullptr), Showlog(nullptr), th(nullptr), pFileInfo(nullptr), g_pd3dDevice(nullptr),
-	g_pd3dDeviceContext(nullptr), g_pSwapChain(nullptr), g_mainRenderTargetView(nullptr)
+CMain::CMain(HINSTANCE hInst, int Width, int Height) : gSetting(nullptr), p_controlServer(nullptr), Showlog(nullptr), th(nullptr), gListServer(nullptr), 
+	pFileInfo(nullptr), g_pd3dDevice(nullptr), g_pd3dDeviceContext(nullptr), g_pSwapChain(nullptr), g_mainRenderTargetView(nullptr)
 {
 	done = false;
-	IsShowConsoleLog = true;
-	IsShowControlServer = true;
 	IsShowSetting = false;
-
 #ifndef IMGUI_DISABLE_DEBUG_TOOLS
 	IsShowDebug = true;
 #endif
@@ -94,15 +90,17 @@ CMain::CMain(HINSTANCE hInst, int Width, int Height) : gSetting(nullptr),
 
 	p_controlServer = make_shared<CControlServer>(g_pd3dDevice);
 	Showlog = make_shared<CShowConsoleLog>();
+	gListServer = make_shared<CListServer>();
 
 	th = make_unique<_threat>();
 
 	g_pGlob->g_ServerConsole = timer->CreateTimer(Showlog,			g_pGlob->fIntervalServerConsole, nullptr);
 	g_pGlob->g_ControlServer = timer->CreateTimer(p_controlServer,	g_pGlob->fIntervalControlServer, nullptr);
 
-	PushRenderUI(Showlog,			&IsShowConsoleLog);
-	PushRenderUI(p_controlServer,	&IsShowControlServer);
+	PushRenderUI(Showlog,			nullptr);
+	PushRenderUI(p_controlServer,	nullptr);
 	PushRenderUI(gSetting,			&IsShowSetting);
+	PushRenderUI(gListServer,		nullptr);
 	PushRenderUI(g_pNotif,			nullptr);
 	PushRenderUI(pUrls,				nullptr);
 }
@@ -223,8 +221,9 @@ int CMain::Loop()
 		{
 			if (ImGui::BeginMenu(gLangManager->GetLang("File")))
 			{
-				if (ImGui::MenuItem(gLangManager->GetLang("Server console"), NULL, IsShowConsoleLog)) { IsShowConsoleLog = IsShowConsoleLog ? false : true; }
-				if (ImGui::MenuItem(gLangManager->GetLang("Server management"), NULL, IsShowControlServer)) { IsShowControlServer = IsShowControlServer ? false : true; }
+				if (ImGui::MenuItem(gLangManager->GetLang("Server console"), NULL, g_pGlob->IsShowConsoleLog)) { g_pGlob->IsShowConsoleLog = g_pGlob->IsShowConsoleLog ? false : true; }
+				if (ImGui::MenuItem(gLangManager->GetLang("Server management"), NULL, g_pGlob->IsShowControlServer)) { g_pGlob->IsShowControlServer = g_pGlob->IsShowControlServer ? false : true; }
+				if (ImGui::MenuItem(gLangManager->GetLang("List of servers"), NULL, g_pGlob->IsShowListServer)) { g_pGlob->IsShowListServer = g_pGlob->IsShowListServer ? false : true; }
 				if (ImGui::MenuItem(gLangManager->GetLang("Settings"), NULL, IsShowSetting)) { IsShowSetting = IsShowSetting ? false : true; }
 				if (ImGui::MenuItem(gLangManager->GetLang("Exit"))) { done = true; }
 
@@ -245,24 +244,24 @@ int CMain::Loop()
 			ImGui::SetNextWindowPos(vCenter, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 			ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_Always);
 
-			ImGui::Begin(gLangManager->GetLang("About"), &IsShowAbout);
-
-			ImGui::Text(gLangManager->GetLang("Version of the components used in the program:"));
-
-			ImGui::Text("ImGui ver: %s", IMGUI_VERSION);
-			ImGui::Text("CURL  ver: %s", LIBCURL_VERSION);
-			ImGui::Text("RAPIDJSON: %s", RAPIDJSON_VERSION_STRING);
-			if (pFileInfo != nullptr)
+			if (ImGui::Begin(gLangManager->GetLang("About"), &IsShowAbout))
 			{
-				ImGui::Text("Version program: %d.%d.%d.%d", HIWORD(pFileInfo->dwFileVersionMS), LOWORD(pFileInfo->dwFileVersionMS), HIWORD(pFileInfo->dwFileVersionLS), LOWORD(pFileInfo->dwFileVersionLS));
-			}
+				ImGui::Text(gLangManager->GetLang("Version of the components used in the program:"));
 
-			ImGui::SetCursorPos(ImVec2((300.f - 80.f) * 0.5f, (200.f * 1.6f) * 0.5f));
-			if(ImGui::Button("Ok", ImVec2(80, 0)))
-			{
-				IsShowAbout = false;
-			}
+				ImGui::Text("ImGui ver: %s", IMGUI_VERSION);
+				ImGui::Text("CURL  ver: %s", LIBCURL_VERSION);
+				ImGui::Text("RAPIDJSON: %s", RAPIDJSON_VERSION_STRING);
+				if (pFileInfo != nullptr)
+				{
+					ImGui::Text("Version program: %d.%d.%d.%d", HIWORD(pFileInfo->dwFileVersionMS), LOWORD(pFileInfo->dwFileVersionMS), HIWORD(pFileInfo->dwFileVersionLS), LOWORD(pFileInfo->dwFileVersionLS));
+				}
 
+				ImGui::SetCursorPos(ImVec2((300.f - 80.f) * 0.5f, (200.f * 1.6f) * 0.5f));
+				if(ImGui::Button("Ok", ImVec2(80, 0)))
+				{
+					IsShowAbout = false;
+				}
+			}
 			ImGui::End();
 		}
 

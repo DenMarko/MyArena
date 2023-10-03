@@ -116,7 +116,7 @@ bool CControlServer::LoadBuffer(char* filebuf, const size_t fSize, ID3D11ShaderR
 
 void CControlServer::OnUIRender()
 {
-	if (*Is_open)
+	if (g_pGlob->IsShowControlServer)
 	{
 		if(IsStatusReady)
 		{
@@ -132,11 +132,14 @@ void CControlServer::OnUIRender()
 		}
 
 		ImGui::SetNextWindowSize(ImVec2(500, 400), ImGuiCond_FirstUseEver);
-		if (!ImGui::Begin(gLangManager->GetLang("Server management"), Is_open))
+		if (!ImGui::Begin(gLangManager->GetLang("Server management"), &g_pGlob->IsShowControlServer))
 		{
 			ImGui::End();
 			return;
 		}
+
+		ImGui::SeparatorText(gLangManager->GetLang("Server information"));
+		ImGui::Spacing();
 
 		ImGui::BeginChild("Left", ImVec2(160, 140));
 		if (im_texture_url == nullptr)

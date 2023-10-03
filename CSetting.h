@@ -25,6 +25,17 @@ enum EnumStyle
 	Style_Classic
 };
 
+struct STokenList
+{
+	STokenList(const char* Token, bool isActive) : token(Token), IsActive(isActive), IsSelect(false)
+	{}
+
+	string token;
+	bool IsActive;
+	string NServer;
+	bool IsSelect;
+};
+
 struct Globals
 {
 	Globals() :	pIO(nullptr),
@@ -32,11 +43,15 @@ struct Globals
 				fFontSize(12),
 				IsTocken(false),
 				IsWriteToken(false),
+				IsWriteAtiveToken(false),
 				enumStyle(Style_Classic),
 				g_ControlServer(nullptr),
 				g_ServerConsole(nullptr),
 				fIntervalControlServer(10.f),
 				fIntervalServerConsole(3.f),
+				IsShowConsoleLog(true),
+				IsShowControlServer(true),
+				IsShowListServer(true),
 				enumLang(LANG::EN)
 	{}
 	~Globals(){}
@@ -49,14 +64,19 @@ struct Globals
 	EnumStyle enumStyle;
 	LANG enumLang;
 
-	string token;
+	vector<shared_ptr<STokenList>> token;
 	atomic<bool> IsTocken;
 	bool IsWriteToken;
+	bool IsWriteAtiveToken;
 
 	ITimer *g_ControlServer;
 	ITimer *g_ServerConsole;
 	float fIntervalControlServer;
 	float fIntervalServerConsole;
+
+	bool IsShowConsoleLog;
+	bool IsShowControlServer;
+	bool IsShowListServer;
 };
 
 class CSetting : public CUIRender

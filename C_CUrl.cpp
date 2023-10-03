@@ -25,6 +25,8 @@ void *C_CUrl::GetData(COMAND comand, const char *str)
 	void *ret = nullptr;
 	if (g_pGlob->IsTocken)
 	{
+		SetToken();
+
 		CURLcode cod;
 		std::vector<char> data;
 		std::string res_url = "https://www.myarena.ru/api.php";
@@ -37,7 +39,7 @@ void *C_CUrl::GetData(COMAND comand, const char *str)
 			res_url.append("?query=");
 			res_url.append(curl_easy_escape(pUrl, "stop", 0));
 			res_url.append("&token=");
-			res_url.append(curl_easy_escape(pUrl, g_pGlob->token.c_str(), 0));
+			res_url.append(curl_easy_escape(pUrl, token->token.c_str(), 0));
 
 			curl_easy_setopt(pUrl, CURLOPT_URL, res_url.c_str());
 			curl_easy_setopt(pUrl, CURLOPT_WRITEFUNCTION, WriteData);
@@ -107,7 +109,7 @@ void *C_CUrl::GetData(COMAND comand, const char *str)
 				res_url.append("?query=");
 				res_url.append(curl_easy_escape(pUrl, "start", 0));
 				res_url.append("&token=");
-				res_url.append(curl_easy_escape(pUrl, g_pGlob->token.c_str(), 0));
+				res_url.append(curl_easy_escape(pUrl, token->token.c_str(), 0));
 
 				curl_easy_setopt(pUrl, CURLOPT_URL, res_url.c_str());
 				curl_easy_setopt(pUrl, CURLOPT_WRITEFUNCTION, WriteData);
@@ -175,7 +177,7 @@ void *C_CUrl::GetData(COMAND comand, const char *str)
 				res_url.append("?query=");
 				res_url.append(curl_easy_escape(pUrl, "status", 0));
 				res_url.append("&token=");
-				res_url.append(curl_easy_escape(pUrl, g_pGlob->token.c_str(), 0));
+				res_url.append(curl_easy_escape(pUrl, token->token.c_str(), 0));
 				res_url.append("&ver=2");
 
 				curl_easy_setopt(pUrl, CURLOPT_URL, res_url.c_str());
@@ -199,7 +201,7 @@ void *C_CUrl::GetData(COMAND comand, const char *str)
 				res_url.append("?query=");
 				res_url.append(curl_easy_escape(pUrl, "restart", 0));
 				res_url.append("&token=");
-				res_url.append(curl_easy_escape(pUrl, g_pGlob->token.c_str(), 0));
+				res_url.append(curl_easy_escape(pUrl, token->token.c_str(), 0));
 
 				curl_easy_setopt(pUrl, CURLOPT_URL, res_url.c_str());
 				curl_easy_setopt(pUrl, CURLOPT_WRITEFUNCTION, WriteData);
@@ -267,7 +269,7 @@ void *C_CUrl::GetData(COMAND comand, const char *str)
 				res_url.append("?query=");
 				res_url.append(curl_easy_escape(pUrl, "getmaps", 0));
 				res_url.append("&token=");
-				res_url.append(curl_easy_escape(pUrl, g_pGlob->token.c_str(), 0));
+				res_url.append(curl_easy_escape(pUrl, token->token.c_str(), 0));
 
 				curl_easy_setopt(pUrl, CURLOPT_URL, res_url.c_str());
 				curl_easy_setopt(pUrl, CURLOPT_WRITEFUNCTION, WriteData);
@@ -343,7 +345,7 @@ void *C_CUrl::GetData(COMAND comand, const char *str)
 				res_url.append("?query=");
 				res_url.append(curl_easy_escape(pUrl, "getconsole", 0));
 				res_url.append("&token=");
-				res_url.append(curl_easy_escape(pUrl, g_pGlob->token.c_str(), 0));
+				res_url.append(curl_easy_escape(pUrl, token->token.c_str(), 0));
 
 				curl_easy_setopt(pUrl, CURLOPT_URL, res_url.c_str());
 				curl_easy_setopt(pUrl, CURLOPT_WRITEFUNCTION, WriteData);
@@ -368,7 +370,7 @@ void *C_CUrl::GetData(COMAND comand, const char *str)
 				res_url.append("&map=");
 				res_url.append(curl_easy_escape(pUrl, str, 0));
 				res_url.append("&token=");
-				res_url.append(curl_easy_escape(pUrl, g_pGlob->token.c_str(), 0));
+				res_url.append(curl_easy_escape(pUrl, token->token.c_str(), 0));
 
 				curl_easy_setopt(pUrl, CURLOPT_URL, res_url.c_str());
 				curl_easy_setopt(pUrl, CURLOPT_WRITEFUNCTION, WriteData);
@@ -440,7 +442,7 @@ void *C_CUrl::GetData(COMAND comand, const char *str)
 				res_url.append("&cmd=");
 				res_url.append(curl_easy_escape(pUrl, str, 0));
 				res_url.append("&token=");
-				res_url.append(curl_easy_escape(pUrl, g_pGlob->token.c_str(), 0));
+				res_url.append(curl_easy_escape(pUrl, token->token.c_str(), 0));
 
 				curl_easy_setopt(pUrl, CURLOPT_URL, res_url.c_str());
 				curl_easy_setopt(pUrl, CURLOPT_WRITEFUNCTION, WriteData);
@@ -509,7 +511,7 @@ void *C_CUrl::GetData(COMAND comand, const char *str)
 	return ret;
 }
 
-void * C_CUrl::SetToken(const char * cToken)
+void * C_CUrl::StatusToken(const char *cToken)
 {
 	CURLcode cod;
 	std::vector<char> data;
@@ -520,6 +522,7 @@ void * C_CUrl::SetToken(const char * cToken)
 	res_url.append(curl_easy_escape(pUrl, "status", 0));
 	res_url.append("&token=");
 	res_url.append(curl_easy_escape(pUrl, cToken, 0));
+	res_url.append("&ver=2");
 
 	curl_easy_setopt(pUrl, CURLOPT_URL, res_url.c_str());
 	curl_easy_setopt(pUrl, CURLOPT_WRITEFUNCTION, WriteData);
@@ -528,7 +531,7 @@ void * C_CUrl::SetToken(const char * cToken)
 	cod = curl_easy_perform(pUrl);
 	curl_easy_reset(pUrl);
 
-	CmdResult *res = new CmdResult();
+	TokenResult *res = new TokenResult();
 
 	if (cod != CURLE_OK)
 	{
@@ -536,27 +539,19 @@ void * C_CUrl::SetToken(const char * cToken)
 		res->msg.append(gLangManager->GetLang("Connection error, try again later!"));
 		return res;
 	}
+	GetStatus *stats = reinterpret_cast<GetStatus *>(this->GetParseStatus(data));
 
-	rapidjson::Document doc;
-	if (doc.Parse(data.data()).HasParseError())
+	if (stats->status == STATUS::STATUS_OK)
+	{
+		res->status = STATUS::STATUS_OK;
+		res->SServer = stats;
+		res->msg.append(gLangManager->GetLang("Correctly led token!"));
+	}
+	else if(stats->status == STATUS::STATUS_ERROR)
 	{
 		res->status = STATUS::STATUS_ERROR;
-		res->msg.append(gLangManager->GetLang("Incorrect answer!"));
-		return res;
-	}
-
-	if (doc["status"].IsString())
-	{
-		if (strcmp(doc["status"].GetString(), "OK") == 0)
-		{
-			res->status = STATUS::STATUS_OK;
-			res->msg.append(gLangManager->GetLang("Correctly led token!"));
-		}
-		else if(strcmp(doc["status"].GetString(), "NO") == 0)
-		{
-			res->status = STATUS::STATUS_ERROR;
-			res->msg.append(gLangManager->GetLang("Incorrect token entered!"));
-		}
+		res->SServer = stats;
+		res->msg.append(gLangManager->GetLang("Incorrect token entered!"));
 	}
 
 	return res;
@@ -763,14 +758,23 @@ void C_CUrl::OnUIRender()
 			char *s = buffer;
 			if (s[0])
 			{
-				CmdResult *res =  reinterpret_cast<CmdResult *>(SetToken(s));
+				TokenResult *res =  reinterpret_cast<TokenResult *>(StatusToken(s));
 				if (res->status == STATUS::STATUS_OK)
 				{
-					g_pGlob->token.append(s);
+					for (auto& sTok : g_pGlob->token)
+					{
+						if(sTok->IsActive)
+							sTok->IsActive = false;
+					}
+
+					g_pGlob->token.emplace_back(make_shared<STokenList>(s, true));
+					g_pGlob->token.back()->NServer = res->SServer->data->hostname;
+					g_pGlob->IsWriteAtiveToken = true;
 					g_pNotif->Notificatio(res->msg.c_str());
 
 					ImGui::CloseCurrentPopup();
 					g_pGlob->IsTocken = true;
+					IsOpen = true;
 				}
 				else if (res->status == STATUS::STATUS_ERROR)
 				{
@@ -786,6 +790,14 @@ void C_CUrl::OnUIRender()
 		ImGui::SameLine();
 
 		g_pNotif->HelpMarcer(gLangManager->GetLang("Not recommended for public computers!!!"));
+
+		ImGui::SetCursorPos(ImVec2((ImGui::GetWindowSize().x * 0.5f) * 0.5f, ImGui::GetCursorPos().y));
+		if (ImGui::Button(gLangManager->GetLang("Exit"), ImVec2(ImGui::GetWindowSize().x * .5f, 0.f)))
+		{
+			ImGui::CloseCurrentPopup();
+			g_pGlob->IsTocken = true;
+			IsOpen = true;
+		}
 
 		ImGui::EndPopup();
 	}

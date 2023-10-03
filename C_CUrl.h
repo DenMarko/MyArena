@@ -42,14 +42,35 @@ public:
 
 	void *GetData(COMAND command, const char *cmd = nullptr);
 	void LoadImageMap(std::string url_img, vector<char> *MapImag);
+	void *StatusToken(const char* cToken);
+	void SetToken()
+	{
+		if (g_pGlob->IsWriteAtiveToken)
+		{
+			if (token != nullptr)
+			{
+				token->IsActive = false;
+			}
 
+			for (auto &sTok : g_pGlob->token)
+			{
+				if (sTok->IsActive)
+				{
+					token = sTok;
+					g_pGlob->IsWriteAtiveToken = false;
+				}
+			}
+		}
+	}
+
+public:
 	virtual void OnAttach(bool *IsOpen) override {}
 	virtual void OnDetach() override {}
 
 	virtual void OnUIRender() override;
 
 private:
-	void *SetToken(const char* cToken);
+
 	void CheckToken();
 	void *GetParseConsole(vector<char> &data);
 	void *GetParseStatus(vector<char> &data);
@@ -190,6 +211,7 @@ private:
 	mutex mtx;
 	atomic<bool> IsOpen;
 	int CountBedTocken;
+	shared_ptr<STokenList> token;
 
 	char buffer[256];
 };

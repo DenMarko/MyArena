@@ -36,10 +36,27 @@ CSetting::CSetting()
 					{
 						if (doc["token"].IsString())
 						{
-							_glob_.token.append(decrypt(string(doc["token"].GetString()), 3));
-							if (_glob_.token.size() > 0)
+							_glob_.token.emplace_back(make_shared<STokenList>(decrypt(string(doc["token"].GetString()), 3).c_str(), true));
+							if (_glob_.token.back()->token.size() > 0)
 							{
 								_glob_.IsTocken = true;
+							}
+						}
+						else if (doc["token"].IsArray())
+						{
+							auto &tokenArray = doc["token"];
+							for (rapidjson::SizeType i = 0; i < tokenArray.Size(); i++)
+							{
+								auto& tok = tokenArray[i];
+								_glob_.token.emplace_back(std::make_shared<STokenList>(
+									(tok["token"].IsString() ? decrypt(string(tok["token"].GetString()), 3).c_str() : ""),
+									(tok["Active"].IsBool() ? tok["Active"].GetBool() : false)));
+
+								if (_glob_.token.back()->IsActive == true || _glob_.token.back()->token.size() > 0)
+								{
+									_glob_.IsTocken = true;
+									_glob_.IsWriteAtiveToken = true;
+								}
 							}
 						}
 					}
@@ -78,6 +95,27 @@ CSetting::CSetting()
 							_glob_.enumLang = (doc["Lang"].GetInt() == 0 ? LANG::UA : doc["Lang"].GetInt() == 1 ? LANG::RU : LANG::EN);
 						}
 					}
+					if (doc.HasMember("ShowControlServer"))
+					{
+						if (doc["ShowControlServer"].IsBool())
+						{
+							_glob_.IsShowControlServer = doc["ShowControlServer"].GetBool();
+						}
+					}
+					if (doc.HasMember("ShowConsoleServer"))
+					{
+						if (doc["ShowConsoleServer"].IsBool())
+						{
+							_glob_.IsShowConsoleLog = doc["ShowConsoleServer"].GetBool();
+						}
+					}
+					if (doc.HasMember("ShowListServer"))
+					{
+						if (doc["ShowListServer"].IsBool())
+						{
+							_glob_.IsShowListServer = doc["ShowListServer"].GetBool();
+						}
+					}
 				}
 				delete[] buf;
 			} else {
@@ -114,22 +152,51 @@ CSetting::~CSetting()
 			{
 				if (doc.HasMember("token"))
 				{
-					auto tocken = encrypt(_glob_.token.c_str(), 3);
-					doc["token"].SetString(tocken.c_str(), tocken.length(), doc.GetAllocator());
+					if (doc["token"].IsArray())
+					{
+						doc["token"].Clear();
+						for (auto &tok : _glob_.token)
+						{
+							if (tok->token.size() > 0)
+							{
+								rapidjson::Value obj(rapidjson::kObjectType);
+								obj.AddMember("Active", tok->IsActive, doc.GetAllocator());
+								rapidjson::Value vToken;
+								auto tocken = encrypt(tok->token.c_str(), 3);
+								vToken.SetString(tocken.c_str(), tocken.length(), doc.GetAllocator());
+								obj.AddMember("token", vToken, doc.GetAllocator());
+
+								doc["token"].PushBack(obj, doc.GetAllocator());
+							}
+						}
+					}
 				}
 				else
 				{
-					rapidjson::Value vToken;
-					auto tocken = encrypt(_glob_.token.c_str(), 3);
-					vToken.SetString(tocken.c_str(), tocken.length(), doc.GetAllocator());
-					doc.AddMember("token", vToken, doc.GetAllocator());
+					rapidjson::Value tokenArray(rapidjson::kArrayType);
+					for (auto &tok : _glob_.token)
+					{
+						if (tok->token.size() > 0)
+						{
+							rapidjson::Value obj(rapidjson::kObjectType);
+							obj.AddMember("Active", tok->IsActive, doc.GetAllocator());
+							rapidjson::Value vToken;
+							auto tocken = encrypt(tok->token.c_str(), 3);
+							vToken.SetString(tocken.c_str(), tocken.length(), doc.GetAllocator());
+							obj.AddMember("token", vToken, doc.GetAllocator());
+
+							tokenArray.PushBack(obj, doc.GetAllocator());
+						}
+					}
+					doc.AddMember("token", tokenArray, doc.GetAllocator());
 				}
 			}
 			else
 			{
 				if (!doc.HasMember("token"))
 				{
-					doc.AddMember("token", "", doc.GetAllocator());
+					rapidjson::Value tokenArray(rapidjson::kArrayType);
+					doc.AddMember("token", tokenArray, doc.GetAllocator());
 				}
 			}
 
@@ -176,6 +243,33 @@ CSetting::~CSetting()
 			else
 			{
 				doc.AddMember("Lang", (_glob_.enumLang == LANG::UA ? 0 : _glob_.enumLang == LANG::RU ? 1 : 2), doc.GetAllocator());
+			}
+
+			if (doc.HasMember("ShowControlServer"))
+			{
+				doc["ShowControlServer"].SetBool(_glob_.IsShowControlServer);
+			}
+			else
+			{
+				doc.AddMember("ShowControlServer", _glob_.IsShowControlServer, doc.GetAllocator());
+			}
+
+			if (doc.HasMember("ShowConsoleServer"))
+			{
+				doc["ShowConsoleServer"].SetBool(_glob_.IsShowConsoleLog);
+			}
+			else
+			{
+				doc.AddMember("ShowConsoleServer", _glob_.IsShowConsoleLog, doc.GetAllocator());
+			}
+
+			if (doc.HasMember("ShowListServer"))
+			{
+				doc["ShowListServer"].SetBool(_glob_.IsShowListServer);
+			}
+			else
+			{
+				doc.AddMember("ShowListServer", _glob_.IsShowListServer, doc.GetAllocator());
 			}
 
 			rapidjson::StringBuffer buf;

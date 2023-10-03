@@ -76,6 +76,4 @@ private:
 	ImVector<char*>		History;
 	char				InputBuf[256];
 	int					HistoryPos;
-
-	bool*				Is_open;
 };

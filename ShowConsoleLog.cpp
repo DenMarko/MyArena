@@ -27,13 +27,13 @@ void CShowConsoleLog::AddLog(const char *fmt, ...)
 	CheckLimit(lBuf, LineOffsets);
 }
 
-void CShowConsoleLog::OnAttach(bool * IsOpen) {	Is_open = IsOpen; }
+void CShowConsoleLog::OnAttach(bool * IsOpen) {}
 void CShowConsoleLog::OnUIRender()
 {
-	if (*Is_open)
+	if (g_pGlob->IsShowConsoleLog)
 	{
 		ImGui::SetNextWindowSize(ImVec2(500, 400), ImGuiCond_FirstUseEver);
-		if (!ImGui::Begin(gLangManager->GetLang("Server console"), Is_open))
+		if (!ImGui::Begin(gLangManager->GetLang("Server console"), &g_pGlob->IsShowConsoleLog))
 		{
 			ImGui::End();
 			return;

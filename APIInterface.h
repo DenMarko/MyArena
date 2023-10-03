@@ -95,3 +95,24 @@ struct GetStatus
 	string						MapImg;
 	STATUS						status;
 };
+
+struct TokenResult
+{
+	TokenResult()
+	{
+		status = STATUS::STATUS_ERROR;
+		SServer = nullptr;
+	}
+
+	~TokenResult()
+	{
+		if(SServer != nullptr)
+		{
+			delete SServer;
+		}
+	}
+
+	string						msg;
+	GetStatus					*SServer;
+	STATUS						status;
+};
