@@ -54,7 +54,10 @@ struct Globals
 				IsShowListServer(true),
 				enumLang(LANG::EN)
 	{}
-	~Globals(){}
+	~Globals()
+	{
+		token.clear();
+	}
 
 	ImGuiIO *pIO;
 	ImFont *pFont;
@@ -65,6 +68,7 @@ struct Globals
 	LANG enumLang;
 
 	vector<shared_ptr<STokenList>> token;
+
 	atomic<bool> IsTocken;
 	bool IsWriteToken;
 	bool IsWriteAtiveToken;

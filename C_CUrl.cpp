@@ -506,6 +506,7 @@ void *C_CUrl::GetData(COMAND comand, const char *str)
 			}
 			break;
 		}
+		data.clear();
 	}
 
 	return ret;
@@ -553,6 +554,8 @@ void * C_CUrl::StatusToken(const char *cToken)
 		res->SServer = stats;
 		res->msg.append(gLangManager->GetLang("Incorrect token entered!"));
 	}
+
+	data.clear();
 
 	return res;
 }

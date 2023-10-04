@@ -5,6 +5,12 @@
 #include "C_CUrl.h"
 #include <stdio.h>
 
+#define RELEASE(iface) \
+if(iface != nullptr) \
+{ \
+	delete iface; \
+}
+
 class CControlServer : public ITimerEvent,
 						public CUIRender
 {
@@ -12,8 +18,8 @@ public:
 	CControlServer(ID3D11Device* pDevice);
 	~CControlServer()
 	{
-		delete p_gStatus;
-		delete p_gMaps;
+		RELEASE(p_gStatus)
+		RELEASE(p_gMaps)
 
 		if (im_texture)
 		{

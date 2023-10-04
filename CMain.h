@@ -82,7 +82,7 @@ namespace SpaceMain
 		void CleanupRenderTarget();
 		static LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-		void PushRenderUI(const shared_ptr<CUIRender>& UI, bool *IsOpen);
+		void PushRenderUI(const shared_ptr<CUIRender>& UI, bool *IsOpen = nullptr);
 
 	private:
 		HWND hWind;

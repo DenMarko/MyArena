@@ -37,7 +37,8 @@ IsStatusReady(true)
 					im_texture_url = nullptr;
 				}
 			}
-		} else { IMGUI_DEBUG_LOG("Image info is error\n"); }
+		}
+		gImgMap.clear();
 	}
 
 	if (p_gStatus == nullptr)
@@ -66,6 +67,7 @@ IsStatusReady(true)
 			LoadBuffer((char *)bite.data(), bite.size(), &im_texture, &im_width, &im_height);
 
 			FreeResource(hGlob);
+			bite.clear();
 		}
 	}
 }

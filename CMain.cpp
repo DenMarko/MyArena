@@ -97,12 +97,12 @@ CMain::CMain(HINSTANCE hInst, int Width, int Height) : gSetting(nullptr), p_cont
 	g_pGlob->g_ServerConsole = timer->CreateTimer(Showlog,			g_pGlob->fIntervalServerConsole, nullptr);
 	g_pGlob->g_ControlServer = timer->CreateTimer(p_controlServer,	g_pGlob->fIntervalControlServer, nullptr);
 
-	PushRenderUI(Showlog,			nullptr);
-	PushRenderUI(p_controlServer,	nullptr);
 	PushRenderUI(gSetting,			&IsShowSetting);
-	PushRenderUI(gListServer,		nullptr);
-	PushRenderUI(g_pNotif,			nullptr);
-	PushRenderUI(pUrls,				nullptr);
+	PushRenderUI(Showlog);
+	PushRenderUI(p_controlServer);
+	PushRenderUI(gListServer);
+	PushRenderUI(g_pNotif);
+	PushRenderUI(pUrls);
 }
 
 CMain::~CMain()
@@ -553,10 +553,14 @@ LRESULT WINAPI CMain::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		NCCALCSIZE_PARAMS* params = (NCCALCSIZE_PARAMS*)lParam;
 		RECT* requestedClientRect = params->rgrc;
 
-		requestedClientRect->right -= resizeBorderX;
-		requestedClientRect->left += resizeBorderX;
-		requestedClientRect->bottom -= resizeBorderY;
-		requestedClientRect->top += 0;
+		requestedClientRect->right = requestedClientRect->right - resizeBorderX;
+		requestedClientRect->left = requestedClientRect->left + resizeBorderX;
+		requestedClientRect->bottom = requestedClientRect->bottom - resizeBorderY;
+
+		if(IsZoomed(hWnd))
+			requestedClientRect->top = requestedClientRect->top + 6;
+		else
+			requestedClientRect->top = requestedClientRect->top + 0;
 
 		return WVR_ALIGNTOP | WVR_ALIGNLEFT;
 	}
