@@ -51,7 +51,7 @@ CMain::CMain(HINSTANCE hInst, int Width, int Height) : gSetting(nullptr), p_cont
 	}
 
 	RegisterClassExW(&wc);
-	hWind = CreateWindowExW(0, wc.lpszClassName, L"MyArena", WS_OVERLAPPEDWINDOW, 100, 100, Width, Height, nullptr, nullptr, wc.hInstance, nullptr);
+	hWind = CreateWindowExW(0, wc.lpszClassName, L"MyArena", WS_OVERLAPPEDWINDOW, 100, 100, Width, Height, nullptr, nullptr, hInst, nullptr);
 	if(!hWind)
 		throw Exception(__FILE__, __LINE__, "Failed to get valid window handle.");
 
@@ -59,7 +59,7 @@ CMain::CMain(HINSTANCE hInst, int Width, int Height) : gSetting(nullptr), p_cont
 	if (!CreateDeviceD3D(hWind))
 	{
 		CleanupDeviceD3D();
-		UnregisterClassW(wc.lpszClassName, wc.hInstance);
+		UnregisterClassW(wc.lpszClassName, hInst);
 
 		throw Exception(__FILE__, __LINE__, "Failed to create Device Direct 3D.");
 	}
@@ -627,22 +627,24 @@ LRESULT WINAPI CMain::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_SYSCOMMAND:
 		switch (wParam & 0xfff0)
 		{
-		case SC_MINIMIZE:
-		{
-			ShowWindow(hWnd, SW_MINIMIZE);
-			UpdateWindow(hWnd);
-			break;
-		}
-		case SC_MAXIMIZE:
-		{
-			ShowWindow(hWnd, SW_MAXIMIZE);
-			break;
-		}
-		case SC_RESTORE:
-		{
-			ShowWindow(hWnd, SW_RESTORE);
-			break;
-		}
+		//case SC_MINIMIZE:
+		//{
+		//	//ShowWindow(hWnd, SW_MINIMIZE);
+		//	//UpdateWindow(hWnd);
+		//	break;
+		//}
+		//case SC_MAXIMIZE:
+		//{
+		//	//ShowWindow(hWnd, SW_MAXIMIZE);
+		//	//UpdateWindow(hWnd);
+		//	break;
+		//}
+		//case SC_RESTORE:
+		//{
+		//	//ShowWindow(hWnd, SW_RESTORE);
+		//	//UpdateWindow(hWnd);
+		//	break;
+		//}
 		case SC_KEYMENU:
 			return 0;
 		}

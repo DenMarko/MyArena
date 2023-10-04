@@ -27,6 +27,9 @@ void *C_CUrl::GetData(COMAND comand, const char *str)
 	{
 		SetToken();
 
+		if(token == nullptr)
+			return nullptr;
+
 		CURLcode cod;
 		std::vector<char> data;
 		std::string res_url = "https://www.myarena.ru/api.php";

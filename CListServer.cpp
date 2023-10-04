@@ -110,7 +110,7 @@ void CListServer::OnUIRender()
 							}
 						}
 						ImGui::CloseCurrentPopup();
-						(*iter)->IsSelect = false;
+
 						break;
 					}
 				}

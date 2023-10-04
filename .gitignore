@@ -11,4 +11,14 @@ Release/vc141.pdb
 *.log
 *.obj
 *.tlog
+libs/usynergy/uSynergy.h
+libs/usynergy/README.txt
+libs/usynergy/uSynergy.c
+libs/glfw/lib-vc2010-64/glfw3.lib
+libs/glfw/lib-vc2010-32/glfw3.lib
+libs/glfw/include/GLFW/glfw3native.h
+libs/glfw/include/GLFW/glfw3.h
+libs/glfw/COPYING.txt
+libs/emscripten/shell_minimal.html
+libs/emscripten/emscripten_mainloop_stub.h
 imgui.ini
