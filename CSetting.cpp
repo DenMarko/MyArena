@@ -30,7 +30,8 @@ CSetting::CSetting()
 				buf[fSize] = '\0';
 				fclose(f);
 
-				if (!doc.Parse(buf).HasParseError())
+				rapidjson::ParseResult ok = doc.Parse(buf);
+				if (ok)
 				{
 					if (doc.HasMember("token"))
 					{
@@ -161,9 +162,8 @@ CSetting::~CSetting()
 							{
 								rapidjson::Value obj(rapidjson::kObjectType);
 								obj.AddMember("Active", tok->IsActive, doc.GetAllocator());
-								rapidjson::Value vToken;
 								auto tocken = encrypt(tok->token.c_str(), 3);
-								vToken.SetString(tocken.c_str(), tocken.length(), doc.GetAllocator());
+								rapidjson::Value vToken(tocken.c_str(), tocken.length(), doc.GetAllocator());
 								obj.AddMember("token", vToken, doc.GetAllocator());
 
 								doc["token"].PushBack(obj, doc.GetAllocator());
@@ -180,9 +180,8 @@ CSetting::~CSetting()
 						{
 							rapidjson::Value obj(rapidjson::kObjectType);
 							obj.AddMember("Active", tok->IsActive, doc.GetAllocator());
-							rapidjson::Value vToken;
 							auto tocken = encrypt(tok->token.c_str(), 3);
-							vToken.SetString(tocken.c_str(), tocken.length(), doc.GetAllocator());
+							rapidjson::Value vToken(tocken.c_str(), tocken.length(), doc.GetAllocator());
 							obj.AddMember("token", vToken, doc.GetAllocator());
 
 							tokenArray.PushBack(obj, doc.GetAllocator());
@@ -306,6 +305,7 @@ void CSetting::SetStile()
 	}
 
 	style.FrameRounding = 2.f;
+	style.IndentSpacing = 11.f;
 	style.GrabRounding = 2.f;
 }
 
@@ -323,16 +323,16 @@ void CSetting::OnUIRender()
 		}
 
 		const char *combStyle[3] = {gLangManager->GetLang("Dark theme"), gLangManager->GetLang("Bright theme"), gLangManager->GetLang("Classic theme")};
+		const EnumStyle eStyle[3] = {Style_Dark, Style_Light, Style_Classic};
 		const char *combPrevVal = combStyle[_glob_.enumStyle];
 		if (ImGui::BeginCombo(gLangManager->GetLang("Color theme"), combPrevVal))
 		{
-			int n = 0;
 			for (int i = 0; i < 3; i++)
 			{
-				const bool is_select = (_glob_.enumStyle == n);
+				const bool is_select = (_glob_.enumStyle == eStyle[i]);
 				if (ImGui::Selectable(combStyle[i], is_select))
 				{
-					_glob_.enumStyle = (n == 0 ? Style_Dark : n == 1 ? Style_Light : Style_Classic);
+					_glob_.enumStyle = eStyle[i];
 					SetStile();
 				}
 
@@ -340,7 +340,6 @@ void CSetting::OnUIRender()
 				{
 					ImGui::SetItemDefaultFocus();
 				}
-				n++;
 			}
 			ImGui::EndCombo();
 		}
@@ -379,29 +378,15 @@ void CSetting::OnUIRender()
 
 		const char *combIntervalControl[4] = {u8"5 sec", u8"10 sec", u8"15 sec", u8"20 sec"};
 		const char *combPrevInterControl = combIntervalControl[_glob_.fIntervalControlServer == 5.f ? 0 : _glob_.fIntervalControlServer == 10.f ? 1 : _glob_.fIntervalControlServer == 15.f ? 2 : 3];
+		const float iIntervalControl[4] = {5.f, 10.f, 15.f, 20.f};
 		if (ImGui::BeginCombo(gLangManager->GetLang("Server information"), combPrevInterControl, ImGuiComboFlags_NoPreview))
 		{
 			for (int i = 0; i < 4; i++)
 			{
-				const bool isSelect = ((_glob_.fIntervalControlServer == 5.f ? 0 : _glob_.fIntervalControlServer == 10.f ? 1 : _glob_.fIntervalControlServer == 15.f ? 2 : 3) == i); 
+				const bool isSelect = (_glob_.fIntervalControlServer == iIntervalControl[i]); 
 				if (ImGui::Selectable(combIntervalControl[i], isSelect))
 				{
-					switch (i)
-					{
-						case 0:
-							_glob_.fIntervalControlServer = 5.f;
-							break;
-						case 1:
-							_glob_.fIntervalControlServer = 10.f;
-							break;
-						case 2:
-							_glob_.fIntervalControlServer = 15.f;
-							break;
-						case 3:
-							_glob_.fIntervalControlServer = 20.f;
-							break;
-					}
-
+					_glob_.fIntervalControlServer = iIntervalControl[i];
 					_glob_.g_ControlServer->SetNewInterval(_glob_.fIntervalControlServer);
 				}
 
@@ -420,14 +405,15 @@ void CSetting::OnUIRender()
 
 		const char *combLang[3] = {gLangManager->GetLang("Ukrainian"), gLangManager->GetLang("Russian"), gLangManager->GetLang("English")};
 		const char *combPrevLang = combLang[(_glob_.enumLang == LANG::UA ? 0 : _glob_.enumLang == LANG::RU ? 1 : 2)];
+		const LANG elLang[3] = {UA, RU, EN};
 		if(ImGui::BeginCombo(gLangManager->GetLang("Language"), combPrevLang))
 		{
 			for (int i = 0; i < 3; i++)
 			{
-				const bool is_select = ((_glob_.enumLang == LANG::UA ? 0 : _glob_.enumLang == LANG::RU ? 1 : 2) == i);
+				const bool is_select = (_glob_.enumLang == elLang[i]);
 				if(ImGui::Selectable(combLang[i], is_select))
 				{
-					_glob_.enumLang = (i == 0 ? LANG::UA : i == 1 ? LANG::RU : LANG::EN);
+					_glob_.enumLang = elLang[i];
 				}
 
 				if (is_select)

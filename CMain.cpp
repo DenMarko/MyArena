@@ -168,7 +168,7 @@ int CMain::Loop()
 
 		const bool isMaximized = IsZoomed(hWind);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, isMaximized ? ImVec2(6.f, 6.f) : ImVec2(1.f, 1.f));
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
 
 		ImGui::Begin("DockSpace Demo", nullptr, win_flags);
 

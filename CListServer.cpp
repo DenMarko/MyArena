@@ -110,7 +110,6 @@ void CListServer::OnUIRender()
 							}
 						}
 						ImGui::CloseCurrentPopup();
-
 						break;
 					}
 				}

@@ -28,7 +28,7 @@ void *C_CUrl::GetData(COMAND comand, const char *str)
 		SetToken();
 
 		if(token == nullptr)
-			return nullptr;
+			return ret;
 
 		CURLcode cod;
 		std::vector<char> data;
@@ -738,8 +738,7 @@ public:
 
 void C_CUrl::OnUIRender()
 {
-	this->CheckToken();
-
+	CheckToken();
 	if (g_pGlob->IsTocken)
 	{
 		return;
@@ -798,7 +797,7 @@ void C_CUrl::OnUIRender()
 		g_pNotif->HelpMarcer(gLangManager->GetLang("Not recommended for public computers!!!"));
 
 		ImGui::SetCursorPos(ImVec2((ImGui::GetWindowSize().x * 0.5f) * 0.5f, ImGui::GetCursorPos().y));
-		if (ImGui::Button(gLangManager->GetLang("Exit"), ImVec2(ImGui::GetWindowSize().x * .5f, 0.f)))
+		if (ImGui::Button(gLangManager->GetLang("Exit"), ImVec2(ImGui::GetWindowSize().x * 0.5f, 0.f)))
 		{
 			ImGui::CloseCurrentPopup();
 			g_pGlob->IsTocken = true;
