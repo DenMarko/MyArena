@@ -32,46 +32,32 @@ void CListServer::OnUIRender()
 			return;
 		}
 
-		ImGui::SetCursorPos(ImVec2((ImGui::GetWindowSize().x * 0.5f) * 0.5f, ImGui::GetCursorPos().y));
-		if (ImGui::Button(gLangManager->GetLang("Add server"), ImVec2(ImGui::GetWindowSize().x * 0.5f, 0.f)))
-		{
-			g_pGlob->IsTocken = false;
-		}
-
 		ImGui::Spacing();
 		ImGui::SeparatorText(gLangManager->GetLang("List of servers"));
 		ImGui::Spacing();
 
-		static ImGuiTableFlags tFlags = ImGuiTableFlags_Borders | ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_SizingStretchProp;
-		if (ImGui::BeginTable("List of servers", 2, tFlags, ImVec2(0.f, 0.f)))
+		ImVec2 wSize = ImGui::GetWindowSize();
+		if (ImGui::BeginTable("List of servers", 2, ImGuiTableFlags_Borders |
+													ImGuiTableFlags_NoBordersInBodyUntilResize |
+													ImGuiTableFlags_SizingStretchProp, ImVec2(0.f, (wSize.y - 98.f))))
 		{
 			ImGui::TableSetupColumn(gLangManager->GetLang("Server name"), ImGuiTableColumnFlags_WidthFixed, 200.f);
 			ImGui::TableSetupColumn(gLangManager->GetLang("Active"));
 			ImGui::TableHeadersRow();
-
-			for (size_t i = 0; i < g_pGlob->token.size(); i++)
+			size_t i = 0;
+			auto iter = g_pGlob->token.begin();
+			for ( ; iter != g_pGlob->token.end(); )
 			{
 				ImGui::TableNextRow();
 				ImGui::TableNextColumn();
 				char label[32];
-				sprintf_s(label, u8"%d: %s", (i + 1), g_pGlob->token[i]->NServer.c_str());
-				if(ImGui::Selectable(label, &g_pGlob->token[i]->IsSelect, ImGuiSelectableFlags_SpanAllColumns))
-				{
-					ImGui::OpenPopup("open_menu_select");
-				}
-				ImGui::TableNextColumn();
-				ImGui::Text(u8"%s", g_pGlob->token[i]->IsActive ? gLangManager->GetLang("Active") : gLangManager->GetLang("Not active"));
-			}
+				sprintf_s(label, u8"%d: %s", (i + 1), (*iter)->NServer.c_str());
+				if(ImGui::Selectable(label, (*iter)->IsSelect, ImGuiSelectableFlags_SpanAllColumns)) {	(*iter)->IsSelect = true;	}
 
-			ImGui::EndTable();
-		}
-
-		if (ImGui::BeginPopupContextItem("open_menu_select", ImGuiPopupFlags_MouseButtonLeft))
-		{
-			for (auto iter = g_pGlob->token.begin(); iter != g_pGlob->token.end(); )
-			{
-				if((*iter)->IsSelect)
+				if (ImGui::BeginPopupContextItem())
 				{
+					(*iter)->IsSelect = true;
+
 					if (!(*iter)->IsActive)
 					{
 						if (ImGui::Button(gLangManager->GetLang("Activate")))
@@ -82,10 +68,9 @@ void CListServer::OnUIRender()
 
 							ImGui::CloseCurrentPopup();
 							(*iter)->IsSelect = false;
-							break;
 						}
 					}
-					
+
 					if (ImGui::Button(gLangManager->GetLang("Remove")))
 					{
 						iter = g_pGlob->token.erase(iter);
@@ -99,35 +84,41 @@ void CListServer::OnUIRender()
 						{
 							if (iter != g_pGlob->token.end())
 							{
-								(*iter)->IsActive = true;
-								g_pGlob->IsWriteAtiveToken = true;
+								if ((*iter)->IsActive == false)
+								{
+									(*iter)->IsActive = true;
+									g_pGlob->IsWriteAtiveToken = true;
+								}
 							}
 							else
 							{
 								iter--;
-								(*iter)->IsActive = true;
-								g_pGlob->IsWriteAtiveToken = true;
+								if ((*iter)->IsActive == false)
+								{
+									(*iter)->IsActive = true;
+									g_pGlob->IsWriteAtiveToken = true;
+								}
 							}
 						}
 						ImGui::CloseCurrentPopup();
-						break;
 					}
+					ImGui::EndPopup();
 				}
+				if (!ImGui::IsPopupOpen(label)) {	(*iter)->IsSelect = false;	}
+				ImGui::TableNextColumn();
+				ImGui::Text(u8"%s", (*iter)->IsActive ? gLangManager->GetLang("Active") : gLangManager->GetLang("Not active"));
+				
 				iter++;
+				i++;
 			}
-			ImGui::EndPopup();
+
+			ImGui::EndTable();
 		}
 
-		if (!ImGui::IsPopupOpen("open_menu_select"))
+		ImGui::SetCursorPos(ImVec2((wSize.x * 0.5f) * 0.5f, (wSize.y - 30.f)));
+		if (ImGui::Button(gLangManager->GetLang("Add server"), ImVec2(ImGui::GetWindowSize().x * 0.5f, 0.f)))
 		{
-			for (auto &tok : g_pGlob->token)
-			{
-				if (tok->IsSelect)
-				{
-					tok->IsSelect = false;
-					break;
-				}
-			}
+			g_pGlob->IsTocken = false;
 		}
 
 		ImGui::End();
