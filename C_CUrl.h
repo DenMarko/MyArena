@@ -6,17 +6,18 @@
 #include "CSetting.h"
 #include "CNotification.h"
 #include "CException.h"
+#include "Utilite.h"
 
-enum COMAND {
-	COMMAND_STOP = 0,
-	COMMAND_START,
-	COMMAND_STATUS,
-	COMMAND_RESTART,
-	COMMAND_GET_MAPS,
-	COMMAND_GET_CONSOLE,
-	COMMAND_CHANGE_LEVEL,
-	COMMAND_GET_RESOURCES,
-	COMMAND_CONSOLE_CMD
+enum COMMAND {
+	STOP = 0,
+	START,
+	STATUS,
+	RESTART,
+	GET_MAPS,
+	GET_CONSOLE,
+	CHANGE_LEVEL,
+	GET_RESOURCES,
+	CONSOLE_CMD
 };
 
 class C_CUrl : public CUIRender
@@ -40,8 +41,8 @@ public:
 	C_CUrl();
 	~C_CUrl();
 
-	void *GetData(COMAND command, const char *cmd = nullptr);
-	void LoadImageMap(std::string url_img, vector<char> *MapImag);
+	void *GetData(COMMAND command, const char *cmd = nullptr);
+	void LoadImageMap(std::string url_img, Utilite::CArray<char> *MapImag);
 	void *StatusToken(const char* cToken);
 	void SetToken()
 	{
@@ -58,6 +59,8 @@ public:
 				{
 					token = sTok;
 					g_pGlob->IsWriteAtiveToken = false;
+					g_pGlob->IsMapsReloads = true;
+					break;
 				}
 			}
 		}
@@ -72,8 +75,8 @@ public:
 private:
 
 	void CheckToken();
-	void *GetParseConsole(vector<char> &data);
-	void *GetParseStatus(vector<char> &data);
+	void *GetParseConsole(Utilite::CArray<char> &data);
+	void *GetParseStatus(Utilite::CArray<char> &data);
 
 	void CheckBedTocken()
 	{
@@ -87,14 +90,30 @@ private:
 		}
 	}
 
-	static size_t WriteData(char *str, size_t size, size_t nmemb, vector<char> *data)
+	bool Curl_Perform(const std::string &res_url, Utilite::CArray<char> &data)
+	{
+		CURLcode cod;
+
+		curl_easy_setopt(pUrl, CURLOPT_URL, res_url.c_str());
+		curl_easy_setopt(pUrl, CURLOPT_WRITEFUNCTION, WriteData);
+		curl_easy_setopt(pUrl, CURLOPT_WRITEDATA, &data);
+
+		cod = curl_easy_perform(pUrl);
+		curl_easy_reset(pUrl);
+
+		if (cod != CURLE_OK)
+		{
+			IMGUI_DEBUG_LOG("curl error: %s\n", curl_easy_strerror(cod));
+			return false;
+		}
+
+		return true;
+	}
+
+	static size_t WriteData(char *str, size_t size, size_t nmemb, Utilite::CArray<char> *pData)
 	{
 		size_t new_size = size*nmemb;
-		size_t old_size = data->size();
-
-		data->resize(new_size + old_size);
-		memcpy(data->data() + (old_size == 0 ? old_size : (old_size - 1)), str, new_size);
-		data->push_back('\0');
+		pData->push(str, size*nmemb);
 
 		return new_size;
 	}

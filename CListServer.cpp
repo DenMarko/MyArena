@@ -2,23 +2,48 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 
-CListServer::CListServer()
+class CLoadDataListServer : public ITimerEvent
+{
+public:
+	virtual TimerResult OnTimer(void *pData) override
+	{
+		if (reinterpret_cast<CListServer*>(pData)->LoadData()) {
+			return TimerResult::Time_Stop;
+		}
+		
+		return TimerResult::Time_Continue;
+	}
+	virtual void OnTimerEnd(void *pData) override
+	{}
+};
+
+CListServer::CListServer() : pTimerLoadData(nullptr)
+{
+	pTimerLoadData = timer->CreateTimer(make_shared<CLoadDataListServer>(), 0.1f, this);
+}
+
+CListServer::~CListServer()
+{
+	
+}
+
+bool CListServer::LoadData()
 {
 	for (auto &tok : g_pGlob->token)
 	{
 		TokenResult * stats = reinterpret_cast<TokenResult *>(pUrls->StatusToken(tok->token.c_str()));
 		if (stats != nullptr)
 		{
-			if(stats->status == STATUS::STATUS_OK)
+			if(stats->status == OK)
 				tok->NServer = stats->SServer->data->hostname;
 		
 			delete stats;
+		} else {
+			pTimerLoadData->SetNewInterval(5.0f);
+			return false;
 		}
 	}
-}
-
-CListServer::~CListServer()
-{
+	return true;
 }
 
 void CListServer::OnUIRender()
@@ -46,14 +71,13 @@ void CListServer::OnUIRender()
 			ImGui::TableHeadersRow();
 			size_t i = 0;
 			auto iter = g_pGlob->token.begin();
-			for ( ; iter != g_pGlob->token.end(); )
+			while (iter != g_pGlob->token.end())
 			{
 				ImGui::TableNextRow();
 				ImGui::TableNextColumn();
 				char label[32];
 				sprintf_s(label, u8"%d: %s", (i + 1), (*iter)->NServer.c_str());
-				if(ImGui::Selectable(label, (*iter)->IsSelect, ImGuiSelectableFlags_SpanAllColumns)) {	(*iter)->IsSelect = true;	}
-
+				if (ImGui::Selectable(label, (*iter)->IsSelect, ImGuiSelectableFlags_SpanAllColumns)) {	(*iter)->IsSelect = true;	}
 				if (ImGui::BeginPopupContextItem())
 				{
 					(*iter)->IsSelect = true;
@@ -101,15 +125,21 @@ void CListServer::OnUIRender()
 							}
 						}
 						ImGui::CloseCurrentPopup();
+						ImGui::EndPopup();
+						continue;
 					}
 					ImGui::EndPopup();
 				}
-				if (!ImGui::IsPopupOpen(label)) {	(*iter)->IsSelect = false;	}
+				if (!ImGui::IsPopupOpen(label))
+				{
+					if((*iter)->IsSelect)
+						(*iter)->IsSelect = false;
+				}
 				ImGui::TableNextColumn();
 				ImGui::Text(u8"%s", (*iter)->IsActive ? gLangManager->GetLang("Active") : gLangManager->GetLang("Not active"));
 				
-				iter++;
 				i++;
+				iter++;
 			}
 
 			ImGui::EndTable();

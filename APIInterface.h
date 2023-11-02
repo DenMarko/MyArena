@@ -4,9 +4,10 @@
 
 using namespace std;
 
-enum STATUS {
-	STATUS_ERROR = 0,
-	STATUS_OK
+enum STATS {
+	NONE = -1,
+	ERRORS,
+	OK
 };
 
 struct GetConsole
@@ -14,6 +15,7 @@ struct GetConsole
 	GetConsole() 
 	{
 		console_log = nullptr;
+		s = NONE;
 	}
 	~GetConsole()
 	{
@@ -23,20 +25,32 @@ struct GetConsole
 		}
 	}
 
-	STATUS						s;
+	STATS						s;
 	char*						console_log;
 };
 
 struct CmdResult
 {
+	CmdResult()
+	{
+		status = NONE;
+	}
+	~CmdResult() {}
+
 	string						msg;
-	STATUS						status;
+	STATS						status;
 };
 
 struct GetMapList
 {
+	GetMapList()
+	{
+		status = NONE;
+	}
+	~GetMapList() {}
+
 	vector<string>				maps;
-	STATUS						status;
+	STATS						status;
 };
 
 struct GetPlayers
@@ -74,33 +88,33 @@ struct GetStatus
 {
 	GetStatus()
 	{
-		data = new GetData();
+		data = new struct GetData();
 		server_id = 0;
 		server_dateblock = 0;
 		server_daytoblock = 0;
 		online = -1;
-		status = STATUS_OK;
+		status = NONE;
 	}
 	~GetStatus()
 	{
 		delete data;
 	}
 
-	GetData*					data;
+	struct GetData*				data;
 	int							server_id;
 	int							server_dateblock;
 	int							server_daytoblock;
 	int							online;
 	string						JoinServer;
 	string						MapImg;
-	STATUS						status;
+	STATS						status;
 };
 
 struct TokenResult
 {
 	TokenResult()
 	{
-		status = STATUS::STATUS_ERROR;
+		status = NONE;
 		SServer = nullptr;
 	}
 
@@ -114,5 +128,5 @@ struct TokenResult
 
 	string						msg;
 	GetStatus					*SServer;
-	STATUS						status;
+	STATS						status;
 };

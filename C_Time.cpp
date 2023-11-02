@@ -1,6 +1,8 @@
 #include "C_Time.h"
 #include "imgui_internal.h"
 
+using namespace my_timer;
+
 C_Time mTime;
 C_Time *pTime = &mTime;
 
@@ -48,13 +50,25 @@ C_Timer::~C_Timer()
 
 void C_Timer::GlobalFrame(double times)
 {
-	g_fUniversalTime += (static_cast<float>(times) - m_fLastTickedTime);
-
-	m_fLastTickedTime = static_cast<float>(times);
-	if (g_fUniversalTime >= g_fTimerThink)
 	{
-		RunFrame();
-		g_fTimerThink = this->CalcNextThink(g_fTimerThink, TIMER_MIN_ACCURACY);
+		g_fUniversalTime += (static_cast<float>(times) - m_fLastTickedTime);
+		m_fLastTickedTime = static_cast<float>(times);
+
+		if (g_fUniversalTime >= g_fTimerThink)
+		{
+			RunFrame();
+			g_fTimerThink = this->CalcNextThink(g_fTimerThink, TIMER_MIN_ACCURACY);
+		}
+	}
+
+	{
+		scoped_lock<std::mutex> lock(m_EventQueueMutex);
+		while (m_EventQueue.size() > 0)
+		{
+			auto& func = m_EventQueue.front();
+			func();
+			m_EventQueue.pop();
+		}
 	}
 }
 
@@ -80,7 +94,14 @@ void C_Timer::RunFrame()
 				continue;
 			}
 			pTimer->mInExec = false;
-			if (pTimer->fSetNewInterval) { pTimer->mInterval = pTimer->fSetNewInterval; pTimer->fSetNewInterval = 0.f; }
+			if (pTimer->fSetNewInterval)
+			{
+				IMGUI_DEBUG_LOG("old interval: %f\nnew interval: %f\n", pTimer->mInterval, pTimer->fSetNewInterval);
+				if(pTimer->mInterval != pTimer->fSetNewInterval)
+					pTimer->mInterval = pTimer->fSetNewInterval;
+
+				pTimer->fSetNewInterval = 0.f;
+			}
 			pTimer->mToExec = CalcNextThink(pTimer->mToExec, pTimer->mInterval);
 		}
 

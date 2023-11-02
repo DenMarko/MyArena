@@ -9,6 +9,7 @@
 if(iface != nullptr) \
 { \
 	delete iface; \
+	iface = nullptr; \
 }
 
 class CControlServer : public ITimerEvent,
@@ -34,6 +35,8 @@ public:
 		}
 	}
 
+	void SetStatus();
+	void SetMaps();
 public:
 	virtual void OnAttach(bool *IsOpen) override {}
 	virtual void OnDetach() override {}

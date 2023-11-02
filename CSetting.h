@@ -52,7 +52,8 @@ struct Globals
 				IsShowConsoleLog(true),
 				IsShowControlServer(true),
 				IsShowListServer(true),
-				enumLang(LANG::EN)
+				enumLang(LANG::EN),
+				IsMapsReloads(false)
 	{}
 	~Globals()
 	{
@@ -61,26 +62,25 @@ struct Globals
 
 	ImGuiIO *pIO;
 	ImFont *pFont;
-
-	float fFontSize;
+	ITimer *g_ControlServer;
+	ITimer *g_ServerConsole;
 
 	EnumStyle enumStyle;
 	LANG enumLang;
 
 	vector<shared_ptr<STokenList>> token;
-
 	atomic<bool> IsTocken;
-	bool IsWriteToken;
-	bool IsWriteAtiveToken;
 
-	ITimer *g_ControlServer;
-	ITimer *g_ServerConsole;
 	float fIntervalControlServer;
 	float fIntervalServerConsole;
+	float fFontSize;
 
+	bool IsWriteToken;
+	bool IsWriteAtiveToken;
 	bool IsShowConsoleLog;
 	bool IsShowControlServer;
 	bool IsShowListServer;
+	bool IsMapsReloads;
 };
 
 class CSetting : public CUIRender

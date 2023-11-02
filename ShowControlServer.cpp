@@ -1,45 +1,40 @@
 #include "ShowControlServer.h"
 #include "CNotification.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+
 #include "resource.h"
+#include <algorithm>
+#include "stb_image.h"
 
-CControlServer::CControlServer(ID3D11Device* pDevice) : 
-g_pDevice(pDevice),
-p_gMaps(nullptr),
-p_gStatus(nullptr),
-Status(nullptr),
-im_texture(nullptr),
-im_texture_url(nullptr),
-IsStatusReady(true)
+class CLoadDataMap : public ITimerEvent
 {
-	p_gStatus = reinterpret_cast<GetStatus *>(pUrls->GetData(COMAND::COMMAND_STATUS));
-	p_gMaps = reinterpret_cast<GetMapList *>(pUrls->GetData(COMAND::COMMAND_GET_MAPS));
-
-	int iX = 0;
-	int iY = 0;
-	int iComp = 0;
-
-	if (p_gStatus != nullptr)
+public:
+	virtual TimerResult OnTimer(void *pData) override
 	{
-		prevMap.append(p_gStatus->data->mapname);
-
-		std::vector<char> gImgMap;
-		pUrls->LoadImageMap(p_gStatus->MapImg, &gImgMap);
-		if (stbi_info_from_memory(reinterpret_cast<const unsigned char*>(gImgMap.data()), gImgMap.size(), &iX, &iY, &iComp))
-		{
-			IMGUI_DEBUG_LOG("Image info: X[%d] Y[%d] comp[%d]\n", iX, iY, iComp);
-			if (!LoadBuffer(gImgMap.data(), gImgMap.size(), &im_texture_url, &im_width_url, &im_height_url))
-			{
-				if (im_texture_url)
-				{
-					im_texture_url->Release();
-					im_texture_url = nullptr;
-				}
-			}
-		}
-		gImgMap.clear();
+		reinterpret_cast<CControlServer*>(pData)->SetMaps();
+		return TimerResult::Time_Stop;
 	}
+	virtual void OnTimerEnd(void *pData) override
+	{}
+};
+
+class CLoadDataStatus : public ITimerEvent
+{
+public:
+	virtual TimerResult OnTimer(void *pData) override
+	{
+		reinterpret_cast<CControlServer*>(pData)->SetStatus();
+		return TimerResult::Time_Stop;
+	}
+	virtual void OnTimerEnd(void *pData) override
+	{}
+};
+
+CControlServer::CControlServer(ID3D11Device* pDevice) :  g_pDevice(pDevice),
+		p_gMaps(nullptr), p_gStatus(nullptr), Status(nullptr),
+		im_texture(nullptr), im_texture_url(nullptr), IsStatusReady(true)
+{
+	timer->CreateTimer(make_shared<CLoadDataStatus>(), 0.1f, this);
+	timer->CreateTimer(make_shared<CLoadDataMap>(), 0.1f, this);
 
 	if (p_gStatus == nullptr)
 	{
@@ -55,20 +50,62 @@ IsStatusReady(true)
 		if (hGlob)
 		{
 			DWORD size_ = SizeofResource(hM, hRes);
-			BYTE *pData = reinterpret_cast<BYTE*>(LockResource(hGlob));
+			char *pData = reinterpret_cast<char*>(LockResource(hGlob));
 
-			const char* b = "\x42\x4D\x36\xE1\x00\x00\x00\x00\x00\x00\x36\x00\x00\x00";
-			vector<BYTE> bite(14);
-			memcpy(bite.data(), b, 14);
-
-			bite.resize(size_+14);
-			memcpy(bite.data()+14, pData, size_);
-
-			LoadBuffer((char *)bite.data(), bite.size(), &im_texture, &im_width, &im_height);
+			Utilite::CArray<char> bite;
+			bite.push("\x42\x4D\x36\xE1\x00\x00\x00\x00\x00\x00\x36\x00\x00\x00", 14); bite.push(pData, size_);
+			LoadBuffer(bite.data(), bite.Size(), &im_texture, &im_width, &im_height);
 
 			FreeResource(hGlob);
 			bite.clear();
 		}
+	}
+}
+
+void CControlServer::SetStatus()
+{
+	IsStatusReady = false;
+
+	Status = reinterpret_cast<GetStatus *>(pUrls->GetData(STATUS));
+
+	int iX = 0;
+	int iY = 0;
+	int iComp = 0;
+
+	if (Status != nullptr)
+	{
+		prevMap = Status->data->mapname;
+
+		Utilite::CArray<char> gImgMap;
+		pUrls->LoadImageMap(Status->MapImg, &gImgMap); gImgMap.push('\0');
+		if (stbi_info_from_memory(reinterpret_cast<const unsigned char*>(gImgMap.data()), gImgMap.Size(), &iX, &iY, &iComp))
+		{
+			if (!LoadBuffer(gImgMap.data(), gImgMap.Size(), &im_texture_url, &im_width_url, &im_height_url))
+			{
+				if (im_texture_url)
+				{
+					im_texture_url->Release();
+					im_texture_url = nullptr;
+				}
+			}
+		}
+	}
+	IsStatusReady = true;
+}
+
+void CControlServer::SetMaps()
+{
+	if (g_pGlob->IsMapsReloads)
+	{
+		g_pGlob->IsMapsReloads = false;
+		RELEASE(p_gMaps)
+	}
+
+	if (p_gMaps == nullptr)
+	{
+		p_gMaps = reinterpret_cast<GetMapList*>(pUrls->GetData(GET_MAPS));
+		if(p_gMaps != nullptr)
+			std::sort(p_gMaps->maps.begin(), p_gMaps->maps.end());
 	}
 }
 
@@ -126,7 +163,8 @@ void CControlServer::OnUIRender()
 			{
 				if (p_gStatus != Status)
 				{
-					delete p_gStatus;
+					RELEASE(p_gStatus)
+
 					p_gStatus = Status;
 					Status = nullptr;
 				}
@@ -163,14 +201,21 @@ void CControlServer::OnUIRender()
 
 		ImGui::Text(u8"%s", p_gStatus->data->hostname.c_str());
 
-		if(p_gStatus->online == 0)
+		switch (p_gStatus->online)
+		{
+		case 0:
 			ImGui::Text(gLangManager->GetLang("Status: Disabled"));
-		else if(p_gStatus->online == 1)
+			break;
+		case 1:
 			ImGui::Text(gLangManager->GetLang("Status: Enabled"));
-		else if(p_gStatus->online == 2)
+			break;
+		case 2:
 			ImGui::Text(gLangManager->GetLang("Status: Reboot"));
-		else
+			break;
+		default:
 			ImGui::Text(u8" ");
+			break;
+		}
 
 		ImGui::Text(u8"IP: %s", p_gStatus->data->addres.c_str());
 		ImGui::Text(u8"%s: %s", gLangManager->GetLang("Map"), p_gStatus->data->mapname.c_str());
@@ -187,59 +232,67 @@ void CControlServer::OnUIRender()
 
 		if (ImGui::Button(gLangManager->GetLang("Start"), ImVec2(80, 0)))
 		{
-			if (p_gStatus->online == 0)
+			timer->AddNextFrame([online = p_gStatus->online]()
 			{
-				auto res = reinterpret_cast<CmdResult *>(pUrls->GetData(COMAND::COMMAND_START));
-
-				if (res->status == STATUS::STATUS_OK)
+				if (online == 0)
 				{
-					g_pNotif->Notificatio(res->msg.c_str());
-				}
+					auto res = reinterpret_cast<CmdResult *>(pUrls->GetData(START));
 
-				delete res;
-			}
-			else
-			{
-				g_pNotif->Notificatio(u8"%s", p_gStatus->online == 1 ? gLangManager->GetLang("The server is already enabled") : p_gStatus->online == 2 ? gLangManager->GetLang("The server reboots") : u8"NULL");
-			}
+					if (res->status == OK)
+					{
+						g_pNotif->Notificatio(res->msg.c_str());
+					}
+
+					delete res;
+				}
+				else
+				{
+					g_pNotif->Notificatio(u8"%s", online == 1 ? gLangManager->GetLang("The server is already enabled") : online == 2 ? gLangManager->GetLang("The server reboots") : u8"NULL");
+				}
+			});
 		}
 		ImGui::SameLine();
 		if (ImGui::Button(gLangManager->GetLang("Stop"), ImVec2(80, 0)))
 		{
-			if (p_gStatus->online == 1)
+			timer->AddNextFrame([online = p_gStatus->online]()
 			{
-				auto res = reinterpret_cast<CmdResult *>(pUrls->GetData(COMAND::COMMAND_STOP));
-
-				if (res->status == STATUS::STATUS_OK)
+				if (online == 1)
 				{
-					g_pNotif->Notificatio(res->msg.c_str());
-				}
+					auto res = reinterpret_cast<CmdResult *>(pUrls->GetData(STOP));
 
-				delete res;
-			}
-			else
-			{
-				g_pNotif->Notificatio(u8"%s", p_gStatus->online == 0 ? gLangManager->GetLang("The server is already down") : p_gStatus->online == 2 ? gLangManager->GetLang("The server reboots") : u8"NULL");
-			}
+					if (res->status == OK)
+					{
+						g_pNotif->Notificatio(res->msg.c_str());
+					}
+
+					delete res;
+				}
+				else
+				{
+					g_pNotif->Notificatio(u8"%s", online == 0 ? gLangManager->GetLang("The server is already down") : online == 2 ? gLangManager->GetLang("The server reboots") : u8"NULL");
+				}
+			});
 		}
 		ImGui::SameLine();
 		if (ImGui::Button(gLangManager->GetLang("Restart"), ImVec2(80, 0)))
 		{
-			if (p_gStatus->online == 1)
+			timer->AddNextFrame([online = p_gStatus->online]()
 			{
-				auto res = reinterpret_cast<CmdResult *>(pUrls->GetData(COMAND::COMMAND_RESTART));
-
-				if (res->status == STATUS::STATUS_OK)
+				if (online == 1)
 				{
-					g_pNotif->Notificatio(res->msg.c_str());
-				}
+					auto res = reinterpret_cast<CmdResult *>(pUrls->GetData(RESTART));
+					if (res->status == OK)
+					{
+						g_pNotif->Notificatio(res->msg.c_str());
+					}
 
-				delete res;
-			}
-			else
-			{
-				g_pNotif->Notificatio(u8"%s", p_gStatus->online == 0 ? gLangManager->GetLang("The server is down") : p_gStatus->online == 2 ? gLangManager->GetLang("The server is already rebooting") : u8"NULL");
-			}
+					delete res;
+				}
+				else
+				{
+					g_pNotif->Notificatio(u8"%s", online == 0 ? gLangManager->GetLang("The server is down") : online == 2 ? gLangManager->GetLang("The server is already rebooting") : u8"NULL");
+				}
+			});
 		}
 		ImGui::SameLine();
 		if (ImGui::Button(gLangManager->GetLang("Go to the server"), ImVec2(130, 0)))
@@ -260,33 +313,30 @@ void CControlServer::OnUIRender()
 			}
 		}
 		ImGui::SameLine();
-
-		static int item_cur_id = 0;
-		const char *comb_prev_val = p_gMaps != nullptr ? p_gMaps->status == STATUS::STATUS_OK ? p_gMaps->maps[item_cur_id].c_str() : '\0' : '\0';
-		if (ImGui::BeginCombo(gLangManager->GetLang("Change map"), comb_prev_val, ImGuiComboFlags_NoPreview))
+		if (p_gMaps != nullptr && p_gMaps->status == OK)
 		{
-			int n = 0;
-			for (auto& str : p_gMaps->maps)
+			if (ImGui::BeginCombo(gLangManager->GetLang("Change map"), p_gStatus->data->mapname.c_str(), ImGuiComboFlags_NoPreview))
 			{
-				const bool is_select = (item_cur_id == n);
-				if(ImGui::Selectable(str.c_str(), is_select))
+				for (auto& str : p_gMaps->maps)
 				{
-					item_cur_id = n;
-					auto res = reinterpret_cast<CmdResult *>(pUrls->GetData(COMAND::COMMAND_CHANGE_LEVEL, str.c_str()));
-					if (res->status == STATUS::STATUS_OK)
+					const bool is_select = (str == p_gStatus->data->mapname);
+					if(ImGui::Selectable(str.c_str(), is_select))
 					{
-						g_pNotif->Notificatio(u8"%s", res->msg.c_str());
+						auto res = reinterpret_cast<CmdResult *>(pUrls->GetData(CHANGE_LEVEL, str.c_str()));
+						if (res->status == OK)
+						{
+							g_pNotif->Notificatio(u8"%s", res->msg.c_str());
+						}
+						delete res;
 					}
-					delete res;
+
+					if(is_select)
+						ImGui::SetItemDefaultFocus();
+
 				}
 
-				if(is_select)
-					ImGui::SetItemDefaultFocus();
-
-				n++;
+				ImGui::EndCombo();
 			}
-
-			ImGui::EndCombo();
 		}
 
 		ImGui::Spacing();
@@ -333,13 +383,13 @@ TimerResult CControlServer::OnTimer(void *pData)
 {
 	IsStatusReady = false;
 
-	Status = reinterpret_cast<GetStatus *>(pUrls->GetData(COMAND::COMMAND_STATUS));
+	Status = reinterpret_cast<GetStatus *>(pUrls->GetData(STATUS));
 	if (Status == nullptr)
 	{
 		IsStatusReady = true;
 		return Time_Continue;
 	}
-	else if (Status->status == STATUS::STATUS_ERROR)
+	else if (Status->status == ERRORS)
 	{
 		delete Status;
 		Status = nullptr;
@@ -347,28 +397,26 @@ TimerResult CControlServer::OnTimer(void *pData)
 		return Time_Continue;
 	}
 
-	if (p_gMaps == nullptr) { p_gMaps = reinterpret_cast<GetMapList *>(pUrls->GetData(COMAND::COMMAND_GET_MAPS)); }
+	SetMaps();
+
 	if (prevMap != Status->data->mapname)
 	{
 		prevMap = Status->data->mapname;
-		IMGUI_DEBUG_LOG("%s\n", prevMap.c_str());
 
 		int iX = 0;
 		int iY = 0;
 		int iComp = 0;
-		std::vector<char> gImgMap;
-		pUrls->LoadImageMap(Status->MapImg, &gImgMap);
-		if (stbi_info_from_memory(reinterpret_cast<const unsigned char*>(gImgMap.data()), gImgMap.size(), &iX, &iY, &iComp))
+		Utilite::CArray<char> gImgMap;
+		pUrls->LoadImageMap(Status->MapImg, &gImgMap); gImgMap.push('\0');
+		if (stbi_info_from_memory(reinterpret_cast<const unsigned char*>(gImgMap.data()), gImgMap.Size(), &iX, &iY, &iComp))
 		{
-			IMGUI_DEBUG_LOG("Image info: X[%d] Y[%d] comp[%d]\n", iX, iY, iComp);
-
 			if (im_texture_url)
 			{
 				im_texture_url->Release();
 				im_texture_url = nullptr;
 			}
 
-			if (!LoadBuffer(gImgMap.data(), gImgMap.size(), &im_texture_url, &im_width_url, &im_height_url))
+			if (!LoadBuffer(gImgMap.data(), gImgMap.Size(), &im_texture_url, &im_width_url, &im_height_url))
 			{
 				if (im_texture_url)
 				{

@@ -78,8 +78,8 @@ void CShowConsoleLog::OnUIRender()
 			char *s = InputBuf;
 			Strtrim(s);
 			if (s[0]) {
-				CmdResult* res = reinterpret_cast< CmdResult *>(pUrls->GetData(COMMAND_CONSOLE_CMD, s));
-				if (res->status == STATUS::STATUS_OK)
+				CmdResult* res = reinterpret_cast< CmdResult *>(pUrls->GetData(CONSOLE_CMD, s));
+				if (res->status == OK)
 				{
 					g_pNotif->Notificatio(res->msg.c_str());
 				}
@@ -193,12 +193,12 @@ int CShowConsoleLog::TextEditCallback(ImGuiInputTextCallbackData* data)
 
 TimerResult CShowConsoleLog::OnTimer(void *pData)
 {
-	auto *con_log = reinterpret_cast<GetConsole *>(pUrls->GetData(COMMAND_GET_CONSOLE));
+	auto *con_log = reinterpret_cast<GetConsole *>(pUrls->GetData(GET_CONSOLE));
 
 	if(con_log == nullptr)
 		return Time_Continue;
 
-	if (con_log->s == STATUS::STATUS_OK)
+	if (con_log->s == OK)
 	{
 		if(con_log->console_log)
 			AddLog("%s", con_log->console_log);

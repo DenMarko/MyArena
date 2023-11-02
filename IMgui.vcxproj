@@ -82,7 +82,7 @@
       <Optimization>Disabled</Optimization>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>F:\source\Microsoft DirectX SDK %28June 2010%29\Include;F:\source\CURL\rapidjson-master\include\rapidjson;libs\curl\include;F:\source\imgui-docking;F:\source\imgui-docking\backends;F:\source\include;libs\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>IMGUI_DISABLE_DEMO_WINDOWS;IMGUI_IMPL_WIN32_DISABLE_GAMEPAD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>IMGUI_DISABLE_DEMO_WINDOWS;IMGUI_IMPL_WIN32_DISABLE_GAMEPAD;STB_IMAGE_IMPLEMENTATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
@@ -111,9 +111,10 @@
       <Optimization>MaxSpeed</Optimization>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>F:\source\Microsoft DirectX SDK %28June 2010%29\Include;F:\source\CURL\rapidjson-master\include\rapidjson;libs\curl\include;F:\source\imgui-docking;F:\source\imgui-docking\backends;F:\source\include;libs\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>IMGUI_DISABLE_DEMO_WINDOWS;IMGUI_DISABLE_DEBUG_TOOLS;IMGUI_IMPL_WIN32_DISABLE_GAMEPAD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>IMGUI_DISABLE_DEMO_WINDOWS;IMGUI_DISABLE_DEBUG_TOOLS;IMGUI_IMPL_WIN32_DISABLE_GAMEPAD;STB_IMAGE_IMPLEMENTATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <SDLCheck>true</SDLCheck>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -164,6 +165,7 @@
     <ClInclude Include="CMain.h" />
     <ClInclude Include="CNotification.h" />
     <ClInclude Include="CSetting.h" />
+    <ClInclude Include="CArray.h" />
     <ClInclude Include="C_CUrl.h" />
     <ClInclude Include="C_Time.h" />
     <ClInclude Include="F:\source\imgui-docking\backends\imgui_impl_dx11.h" />
@@ -174,6 +176,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="ShowConsoleLog.h" />
     <ClInclude Include="ShowControlServer.h" />
+    <ClInclude Include="Utilite.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="IMgui.rc" />

@@ -3,6 +3,7 @@
 #include <vector>
 #include <thread>
 #include <atomic>
+#include <queue>
 #include <mutex>
 
 class C_Time
@@ -51,36 +52,103 @@ public:
 	void SetNewInterval(float fInterval) { fSetNewInterval = fInterval; }
 };
 
-class C_Timer
+namespace my_timer
 {
-public:
-	C_Timer();
-	~C_Timer();
-
-public:
-	void GlobalFrame(double times);
-	ITimer *CreateTimer(const std::shared_ptr<ITimerEvent> &pCallBack, float fInterval, void *pData);
-	void KillTimer(ITimer* pTimer);
-private:
-	void RunFrame();
-	inline double CalcNextThink(double last, float interval)
+	class C_Timer
 	{
-		if (g_fUniversalTime - last - interval <= 0.1)
-			return last + interval;
-		else
-			return g_fUniversalTime + interval;
-	}
-	inline double getSimulateTime()
+	public:
+		C_Timer();
+		~C_Timer();
+
+	public:
+		void GlobalFrame(double times);
+		ITimer *CreateTimer(const std::shared_ptr<ITimerEvent> &pCallBack, float fInterval, void *pData);
+		void KillTimer(ITimer* pTimer);
+
+		template<typename F> void AddNextFrame(F&& func)
+		{
+			m_EventQueue.push(func);
+		}
+	private:
+		void RunFrame();
+		inline double CalcNextThink(double last, float interval)
+		{
+			if (g_fUniversalTime - last - interval <= 0.1)
+				return last + interval;
+			else
+				return g_fUniversalTime + interval;
+		}
+		inline double getSimulateTime()
+		{
+			return g_fUniversalTime;
+		}
+
+		double g_fUniversalTime;
+		double g_fTimerThink;
+		float m_fLastTickedTime;
+
+		std::vector<ITimer*>				mLoopTimer;
+		std::mutex							mMutex;
+
+		std::mutex							m_EventQueueMutex;
+		std::queue<std::function<void()>>	m_EventQueue;
+	};
+
+	template<class... _Mutexes>
+	class scoped_lock
 	{
-		return g_fUniversalTime;
-	}
+	public:
+		explicit scoped_lock(_Mutexes&... _Mtxes)
+			: _MyMutexes(_Mtxes...)
+		{
+			_STD lock(_Mtxes...);
+		}
 
-	double g_fUniversalTime;
-	double g_fTimerThink;
-	float m_fLastTickedTime;
+		explicit scoped_lock(std::adopt_lock_t, _Mutexes&... _Mtxes)
+			: _MyMutexes(_Mtxes...)
+		{
+		}
 
-	std::vector<ITimer*>	mLoopTimer;
-	std::mutex				mMutex;
-};
+		~scoped_lock() noexcept
+		{
+			_For_each_tuple_element(
+				_MyMutexes,
+				[](auto& _Mutex) noexcept { _Mutex.unlock(); });
+		}
 
-extern std::unique_ptr<C_Timer> timer;
+		scoped_lock(const scoped_lock&) = delete;
+		scoped_lock& operator=(const scoped_lock&) = delete;
+	private:
+		std::tuple<_Mutexes&...> _MyMutexes;
+	};
+
+	template<class _Mutex>
+	class scoped_lock<_Mutex>
+	{
+	public:
+		typedef _Mutex mutex_type;
+
+		explicit scoped_lock(_Mutex& _Mtx)
+			: _MyMutex(_Mtx)
+		{
+			_MyMutex.lock();
+		}
+
+		explicit scoped_lock(std::adopt_lock_t, _Mutex& _Mtx)
+			: _MyMutex(_Mtx)
+		{
+		}
+
+		~scoped_lock() noexcept
+		{
+			_MyMutex.unlock();
+		}
+
+		scoped_lock(const scoped_lock&) = delete;
+		scoped_lock& operator=(const scoped_lock&) = delete;
+	private:
+		_Mutex& _MyMutex;
+	};
+}
+
+extern std::unique_ptr<my_timer::C_Timer> timer;
