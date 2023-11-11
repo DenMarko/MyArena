@@ -46,7 +46,7 @@ private:
 
 	void CheckLimit(ImGuiTextBuffer &pBuf, ImVector<int> &pLineOffset)
 	{
-		if (pLineOffset.size() > 1000)
+		if (pLineOffset.size() > 1500)
 		{
 			int val = pLineOffset[0];
 			pBuf.Buf.erase(pBuf.Buf.begin(), pBuf.Buf.begin()+val);

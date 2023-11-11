@@ -140,11 +140,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CDevice3D.cpp" />
+    <ClCompile Include="CImGui.cpp" />
     <ClCompile Include="CLangManager.cpp" />
     <ClCompile Include="CListServer.cpp" />
     <ClCompile Include="CMain.cpp" />
     <ClCompile Include="CNotification.cpp" />
     <ClCompile Include="CSetting.cpp" />
+    <ClCompile Include="CWinWin.cpp" />
     <ClCompile Include="C_CUrl.cpp" />
     <ClCompile Include="C_Time.cpp" />
     <ClCompile Include="F:\source\imgui-docking\backends\imgui_impl_dx11.cpp" />
@@ -159,13 +162,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="APIInterface.h" />
+    <ClInclude Include="CDevice3D.h" />
     <ClInclude Include="CException.h" />
+    <ClInclude Include="CImGui.h" />
     <ClInclude Include="CLangManager.h" />
     <ClInclude Include="CListServer.h" />
     <ClInclude Include="CMain.h" />
     <ClInclude Include="CNotification.h" />
     <ClInclude Include="CSetting.h" />
     <ClInclude Include="CArray.h" />
+    <ClInclude Include="CWinWin.h" />
     <ClInclude Include="C_CUrl.h" />
     <ClInclude Include="C_Time.h" />
     <ClInclude Include="F:\source\imgui-docking\backends\imgui_impl_dx11.h" />

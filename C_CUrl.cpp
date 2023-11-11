@@ -590,10 +590,10 @@ void *C_CUrl::GetParseStatus(Utilite::CArray<char> &mData)
 
 			if (doc["online"].IsInt())				{ res->online = doc["online"].GetInt();										}
 			if (doc["server_id"].IsString())		{ res->server_id = atoi(doc["server_id"].GetString());						}
-			if (doc["server_dateblock"].IsString())	{ res->server_dateblock = atoi(doc["server_dateblock"].GetString());		}
 			if (doc["server_daystoblock"].IsInt())	{ res->server_daytoblock = doc["server_daystoblock"].GetInt();				}
 			if (doc["server_address"].IsString())	{ res->data->addres.append(doc["server_address"].GetString());				}
 			if (doc["map_img"].IsString())			{ res->MapImg = "https://"; res->MapImg.append(doc["map_img"].GetString());	}
+			if (doc["server_dateblock"].IsString()) { res->server_dateblock = atoll(doc["server_dateblock"].GetString());		}
 
 			if(res->online != 1)
 			{

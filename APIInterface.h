@@ -102,7 +102,7 @@ struct GetStatus
 
 	struct GetData*				data;
 	int							server_id;
-	int							server_dateblock;
+	long long					server_dateblock;
 	int							server_daytoblock;
 	int							online;
 	string						JoinServer;

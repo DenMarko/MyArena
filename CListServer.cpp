@@ -29,13 +29,59 @@ CListServer::~CListServer()
 
 bool CListServer::LoadData()
 {
+	auto myLocalTimes = [](STokenList::_times_ *res, const time_t& time) {
+		long seconds = static_cast<long>(time);
+		res->second = seconds % 60;
+		seconds /= 60;
+		res->minute = seconds % 60;
+		seconds /= 60;
+		res->hour = seconds % 24;
+		seconds /= 24;
+
+		const int daysInYear = 365;
+		const int daysInLeapYear = 366;
+
+		int year = 1970;
+		int daysInMonth[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+		while (true) {
+			int daysInCurrentYear = (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) ? daysInLeapYear : daysInYear;
+			if (seconds < daysInCurrentYear) {
+				break;
+			}
+			year++;
+			seconds -= daysInCurrentYear;
+		}
+
+		res->year = year;
+
+		for (int month = 1; month <= 12; ++month) {
+			int daysInCurrentMonth = daysInMonth[month];
+			if (month == 2 && (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0))) {
+				daysInCurrentMonth = 29;
+			}
+
+			if (seconds < daysInCurrentMonth) {
+				res->month = month;
+				res->day = seconds + 1;
+				break;
+			}
+
+			seconds -= daysInCurrentMonth;
+		}
+		return res;
+	};
+
 	for (auto &tok : g_pGlob->token)
 	{
-		TokenResult * stats = reinterpret_cast<TokenResult *>(pUrls->StatusToken(tok->token.c_str()));
+		TokenResult *stats = reinterpret_cast<TokenResult *>(pUrls->StatusToken(tok->token.c_str()));
 		if (stats != nullptr)
 		{
-			if(stats->status == OK)
+			if (stats->status == OK)
+			{
 				tok->NServer = stats->SServer->data->hostname;
+				myLocalTimes(&tok->data_ty_block, static_cast<time_t>(stats->SServer->server_dateblock));
+			}
 		
 			delete stats;
 		} else {
@@ -62,12 +108,13 @@ void CListServer::OnUIRender()
 		ImGui::Spacing();
 
 		ImVec2 wSize = ImGui::GetWindowSize();
-		if (ImGui::BeginTable("List of servers", 2, ImGuiTableFlags_Borders |
+		if (ImGui::BeginTable("List of servers", 3, ImGuiTableFlags_Borders |
 													ImGuiTableFlags_NoBordersInBodyUntilResize |
 													ImGuiTableFlags_SizingStretchProp, ImVec2(0.f, (wSize.y - 98.f))))
 		{
 			ImGui::TableSetupColumn(gLangManager->GetLang("Server name"), ImGuiTableColumnFlags_WidthFixed, 200.f);
-			ImGui::TableSetupColumn(gLangManager->GetLang("Active"));
+			ImGui::TableSetupColumn(gLangManager->GetLang("Active"), ImGuiTableColumnFlags_WidthFixed, 100.f);
+			ImGui::TableSetupColumn(gLangManager->GetLang("Paid until"));
 			ImGui::TableHeadersRow();
 			size_t i = 0;
 			auto iter = g_pGlob->token.begin();
@@ -137,6 +184,8 @@ void CListServer::OnUIRender()
 				}
 				ImGui::TableNextColumn();
 				ImGui::Text(u8"%s", (*iter)->IsActive ? gLangManager->GetLang("Active") : gLangManager->GetLang("Not active"));
+				ImGui::TableNextColumn();
+				ImGui::Text("%04d/%02d/%02d %02d:%02d:%02d", (*iter)->data_ty_block.year, (*iter)->data_ty_block.month, (*iter)->data_ty_block.day, (*iter)->data_ty_block.hour, (*iter)->data_ty_block.minute, (*iter)->data_ty_block.second);
 				
 				i++;
 				iter++;

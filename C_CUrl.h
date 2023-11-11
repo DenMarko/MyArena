@@ -158,7 +158,7 @@ private:
 		int minutes = (int)(floor((time - hours * 3600.0) / 60.0));
 		int seconds = (int)(round(time - hours * 3600.0 - minutes * 60.0));
 
-		char fTime[9];
+		char fTime[10];
 		snprintf(fTime, sizeof(fTime), "%02d:%02d:%02d", hours, minutes, seconds);
 
 		buf->append(fTime);

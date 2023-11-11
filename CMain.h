@@ -1,21 +1,15 @@
 #pragma once
-#include "imgui.h"
-#include "imgui_impl_dx11.h"
-#include "imgui_impl_win32.h"
-#include <d3d11.h>
 #include "ShowConsoleLog.h"
 #include "ShowControlServer.h"
 #include "C_Time.h"
 #include "C_CUrl.h"
 #include "CNotification.h"
-#include "CSetting.h"
 #include "CListServer.h"
-#include "CException.h"
-#include "resource.h"
+#include "CImGui.h"
+#include "CWinWin.h"
 
 namespace SpaceMain
 {
-
 	class CMain
 	{
 		class _threat 
@@ -61,7 +55,7 @@ namespace SpaceMain
 			}
 			virtual std::string GetExceptionType() const override
 			{
-				return "Windows Exception";
+				return "CMain Exception";
 			}
 		};
 	public:
@@ -71,30 +65,16 @@ namespace SpaceMain
 		int Loop();
 
 	private:
-		void RenderWindowOuterBorders(ImGuiWindow* window);
-		bool IsMouseHovered(const ImVec2& MousePos, const ImVec2& pos_min, const ImVec2& pos_max);
-		bool IsCloseButtomDown(const ImVec2& MousePos, const ImVec2& pos_min, const ImVec2& pos_max);
-		bool IsMinimiseButtomDown(const ImVec2& MousePos, const ImVec2& pos_min, const ImVec2& pos_max);
-		bool IsMaximiseButtomDown(const ImVec2& MousePos, const ImVec2& pos_min, const ImVec2& pos_max);
-		bool CreateDeviceD3D(HWND hWnd);
-		void CleanupDeviceD3D();
-		void CreateRenderTarget();
-		void CleanupRenderTarget();
-		static LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-		void PushRenderUI(const shared_ptr<CUIRender>& UI, bool *IsOpen = nullptr);
+		inline void PushRenderUI(const shared_ptr<CUIRender>& UI, bool *IsOpen = nullptr)
+		{
+			m_RenderSteck.emplace_back(UI);
+			UI->OnAttach(IsOpen);
+		}
+
 
 	private:
-		HWND hWind;
-		WNDCLASSEXW wc;
-		ImVec4 clear_color;
 		vector<shared_ptr<CUIRender>> m_RenderSteck;
-
-
-		ID3D11Device*            g_pd3dDevice;
-		ID3D11DeviceContext*     g_pd3dDeviceContext;
-		IDXGISwapChain*          g_pSwapChain;
-		ID3D11RenderTargetView*  g_mainRenderTargetView;
 
 		bool done;
 		bool IsShowSetting;
@@ -107,6 +87,9 @@ namespace SpaceMain
 		shared_ptr<CControlServer> p_controlServer;
 		shared_ptr<CShowConsoleLog> Showlog;
 		shared_ptr<CListServer> gListServer;
+		shared_ptr<SpaceWin::CWinWin> gWin;
+		shared_ptr<SpaceUI::CImGui> gImGui;
+		shared_ptr<Space3D::CDevice3D> gDevice3D;
 
 		unique_ptr<_threat> th;
 
