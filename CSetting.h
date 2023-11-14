@@ -4,6 +4,7 @@
 #include <assert.h>
 #include "document.h"
 #include "CLangManager.h"
+#include "Utilite.h"
 
 using namespace std;
 
@@ -27,18 +28,6 @@ enum EnumStyle
 
 struct STokenList
 {
-	struct _times_
-	{
-		_times_() : year(0), month(0), day(0), hour(0), minute(0), second(0) {}
-
-		int year;
-		int month;
-		int day;
-		int hour;
-		int minute;
-		int second;
-	};
-
 	STokenList(const char* Token, bool isActive) : token(Token), IsActive(isActive), IsSelect(false)
 	{}
 
@@ -46,7 +35,7 @@ struct STokenList
 	bool IsActive;
 	string NServer;
 	bool IsSelect;
-	_times_ data_ty_block;
+	Utilite::Date date_ty_block;
 };
 
 struct Globals

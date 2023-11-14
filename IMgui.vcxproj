@@ -159,6 +159,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ShowConsoleLog.cpp" />
     <ClCompile Include="ShowControlServer.cpp" />
+    <ClCompile Include="Utilite.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="APIInterface.h" />
