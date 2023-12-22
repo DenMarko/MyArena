@@ -5,6 +5,7 @@
 #include <atomic>
 #include <queue>
 #include <mutex>
+#include "CMemory.h"
 
 class C_Time
 {

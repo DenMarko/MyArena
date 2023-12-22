@@ -77,26 +77,9 @@ void CShowConsoleLog::OnUIRender()
 		{
 			char *s = InputBuf;
 			Strtrim(s);
-			if (s[0]) {
-				CmdResult* res = reinterpret_cast< CmdResult *>(pUrls->GetData(CONSOLE_CMD, s));
-				if (res->status == OK)
-				{
-					g_pNotif->Notificatio(res->msg.c_str());
-				}
-				delete res;
+			if (s[0])
+				ExecCmd(s);
 
-				HistoryPos = -1;
-				for (int i = History.Size - 1; i >= 0; i--)
-				{
-					if (Stricmp(History[i], s) == 0)
-					{
-						free(History[i]);
-						History.erase(History.begin() + i);
-						break;
-					}
-				}
-				History.push_back(Strdup(s));
-			}
 			strcpy(s, "");
 		}
 		ImGui::SetItemDefaultFocus();
@@ -105,6 +88,35 @@ void CShowConsoleLog::OnUIRender()
 
 	}
 	return;
+}
+
+void CShowConsoleLog::ExecCmd(const char *cmd)
+{
+	timer->AddNextFrame([sCmd = Strdup(cmd)]()
+	{
+		CmdResult* res = reinterpret_cast< CmdResult *>(pUrls->GetData(CONSOLE_CMD, sCmd));
+		if (res->status == OK)
+		{
+			g_pNotif->Notificatio(res->msg.c_str());
+		}
+		m_delete(res);
+		if(sCmd)
+		{
+			mMemory.mem_free((void *)sCmd);
+		}
+	});
+
+	HistoryPos = -1;
+	for (int i = History.Size - 1; i >= 0; i--)
+	{
+		if (Stricmp(History[i], cmd) == 0)
+		{
+			m_free(History[i]);
+			History.erase(History.begin() + i);
+			break;
+		}
+	}
+	History.push_back(Strdup(cmd));
 }
 
 int CShowConsoleLog::TextEditCallback(ImGuiInputTextCallbackData* data)
@@ -204,6 +216,6 @@ TimerResult CShowConsoleLog::OnTimer(void *pData)
 			AddLog("%s", con_log->console_log);
 	}
 
-	delete con_log;
+	m_delete(con_log);
 	return TimerResult::Time_Continue;
 }

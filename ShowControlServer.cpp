@@ -39,7 +39,7 @@ CControlServer::CControlServer(ID3D11Device* pDevice) :  g_pDevice(pDevice),
 	if (p_gStatus == nullptr)
 	{
 		prevMap = "none";
-		p_gStatus = new GetStatus();
+		p_gStatus = m_new<GetStatus>();
 	}
 
 	HMODULE hM = GetModuleHandle(nullptr);
@@ -243,7 +243,7 @@ void CControlServer::OnUIRender()
 						g_pNotif->Notificatio(res->msg.c_str());
 					}
 
-					delete res;
+					m_delete(res);
 				}
 				else
 				{
@@ -265,7 +265,7 @@ void CControlServer::OnUIRender()
 						g_pNotif->Notificatio(res->msg.c_str());
 					}
 
-					delete res;
+					m_delete(res);
 				}
 				else
 				{
@@ -286,7 +286,7 @@ void CControlServer::OnUIRender()
 						g_pNotif->Notificatio(res->msg.c_str());
 					}
 
-					delete res;
+					m_delete(res);
 				}
 				else
 				{
@@ -322,12 +322,15 @@ void CControlServer::OnUIRender()
 					const bool is_select = (str == p_gStatus->data->mapname);
 					if(ImGui::Selectable(str.c_str(), is_select))
 					{
-						auto res = reinterpret_cast<CmdResult *>(pUrls->GetData(CHANGE_LEVEL, str.c_str()));
-						if (res->status == OK)
+						timer->AddNextFrame([map = str.c_str()]()
 						{
-							g_pNotif->Notificatio(u8"%s", res->msg.c_str());
-						}
-						delete res;
+							auto res = reinterpret_cast<CmdResult *>(pUrls->GetData(CHANGE_LEVEL, map));
+							if (res->status == OK)
+							{
+								g_pNotif->Notificatio(u8"%s", res->msg.c_str());
+							}
+							m_delete(res);
+						});
 					}
 
 					if(is_select)
@@ -391,7 +394,7 @@ TimerResult CControlServer::OnTimer(void *pData)
 	}
 	else if (Status->status == ERRORS)
 	{
-		delete Status;
+		m_delete(Status);
 		Status = nullptr;
 		IsStatusReady = true;
 		return Time_Continue;

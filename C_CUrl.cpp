@@ -43,7 +43,7 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 			res_url.append("&token=");
 			res_url.append(curl_easy_escape(pUrl, token->token.c_str(), 0));
 
-			ret = new CmdResult;
+			ret = m_new<CmdResult>();
 
 			if (!Curl_Perform(res_url, data))
 			{
@@ -106,7 +106,7 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 				res_url.append("&token=");
 				res_url.append(curl_easy_escape(pUrl, token->token.c_str(), 0));
 
-				ret = new CmdResult;
+				ret = m_new<CmdResult>();
 				if (!Curl_Perform(res_url, data))
 				{
 					((CmdResult *)ret)->status = ERRORS;
@@ -183,7 +183,7 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 				res_url.append("&token=");
 				res_url.append(curl_easy_escape(pUrl, token->token.c_str(), 0));
 
-				ret = new CmdResult;
+				ret = m_new<CmdResult>();
 
 				if (!Curl_Perform(res_url, data))
 				{
@@ -249,7 +249,7 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 					break;
 				}
 
-				ret = new GetMapList();
+				ret = m_new<GetMapList>();
 
 				data.push('\0');
 				rapidjson::Document doc;
@@ -331,7 +331,7 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 				res_url.append("&token=");
 				res_url.append(curl_easy_escape(pUrl, token->token.c_str(), 0));
 
-				ret = new CmdResult;
+				ret = m_new<CmdResult>();
 
 				if (!Curl_Perform(res_url, data))
 				{
@@ -396,7 +396,7 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 				res_url.append("&token=");
 				res_url.append(curl_easy_escape(pUrl, token->token.c_str(), 0));
 
-				ret = new CmdResult;
+				ret = m_new<CmdResult>();
 
 				if (!Curl_Perform(res_url, data))
 				{
@@ -468,7 +468,7 @@ void *C_CUrl::StatusToken(const char *cToken)
 	res_url.append(curl_easy_escape(pUrl, cToken, 0));
 	res_url.append("&ver=2");
 
-	TokenResult *res = new TokenResult();
+	TokenResult *res = m_new<TokenResult>();
 
 	if (!Curl_Perform(res_url, mData))
 	{
@@ -498,7 +498,7 @@ void *C_CUrl::StatusToken(const char *cToken)
 void *C_CUrl::GetParseConsole(Utilite::CArray<char> &mData)
 {
 	static std::string oldstr;
-	GetConsole *con = new GetConsole;
+	GetConsole *con = m_new<GetConsole>();
 
 	rapidjson::Document doc;
 	rapidjson::ParseResult ok = doc.Parse(mData.data());
@@ -570,7 +570,7 @@ void *C_CUrl::GetParseConsole(Utilite::CArray<char> &mData)
 
 void *C_CUrl::GetParseStatus(Utilite::CArray<char> &mData)
 {
-	GetStatus *res = new GetStatus();
+	GetStatus *res = m_new<GetStatus>();
 
 	rapidjson::Document doc;
 	rapidjson::ParseResult ok = doc.Parse(mData.data());
@@ -719,7 +719,7 @@ void C_CUrl::OnUIRender()
 					g_pNotif->Notificatio(res->msg.c_str());
 					timer->CreateTimer(make_shared<TimeCallBack>(), 3.2f, &IsOpen);
 				}
-				delete res;
+				m_delete(res);
 			}
 		}
 

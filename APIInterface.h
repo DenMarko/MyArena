@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include "CMemory.h"
 
 using namespace std;
 
@@ -21,7 +22,7 @@ struct GetConsole
 	{
 		if (console_log)
 		{
-			delete[] console_log;
+			m_delete(console_log);
 		}
 	}
 
@@ -88,7 +89,7 @@ struct GetStatus
 {
 	GetStatus()
 	{
-		data = new struct GetData();
+		data = m_new<GetData>();
 		server_id = 0;
 		server_dateblock = 0;
 		server_daytoblock = 0;
@@ -97,7 +98,7 @@ struct GetStatus
 	}
 	~GetStatus()
 	{
-		delete data;
+		m_delete(data);
 	}
 
 	struct GetData*				data;
@@ -120,9 +121,9 @@ struct TokenResult
 
 	~TokenResult()
 	{
-		if(SServer != nullptr)
+		if(SServer)
 		{
-			delete SServer;
+			m_delete(SServer);
 		}
 	}
 

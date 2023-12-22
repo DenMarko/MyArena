@@ -145,6 +145,7 @@
     <ClCompile Include="CLangManager.cpp" />
     <ClCompile Include="CListServer.cpp" />
     <ClCompile Include="CMain.cpp" />
+    <ClCompile Include="CMemory.cpp" />
     <ClCompile Include="CNotification.cpp" />
     <ClCompile Include="CSetting.cpp" />
     <ClCompile Include="CWinWin.cpp" />
@@ -169,6 +170,7 @@
     <ClInclude Include="CLangManager.h" />
     <ClInclude Include="CListServer.h" />
     <ClInclude Include="CMain.h" />
+    <ClInclude Include="CMemory.h" />
     <ClInclude Include="CNotification.h" />
     <ClInclude Include="CSetting.h" />
     <ClInclude Include="CArray.h" />

@@ -148,7 +148,7 @@ private:
 	void CopiData(char **destStr, const char *sourceStr)
 	{
 		const size_t len = strlen(sourceStr) + 1;
-		*destStr = new char[len];
+		*destStr = m_alloc<char>(len);
 		strcpy_s(*destStr, len, sourceStr);
 	}
 

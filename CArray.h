@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <type_traits>
-#include <malloc.h>
+#include "CMemory.h"
 
 namespace Utilite
 {
@@ -29,7 +29,7 @@ namespace Utilite
 		{
 			if (p_Data)
 			{
-				free(p_Data);
+				m_free(p_Data);
 				p_Data = nullptr;
 				size = 0;
 				capacity = 0;
@@ -47,7 +47,7 @@ namespace Utilite
 
 		void init()
 		{
-			p_Data = (T*)malloc(capacity * sizeof(T));
+			p_Data = (T*)m_malloc(capacity * sizeof(T));
 			p_Data[0] = def_value;
 		}
 
@@ -75,13 +75,13 @@ namespace Utilite
 			if (iSize == capacity)
 				return;
 
-			T *data = (T*)realloc(p_Data, iSize * sizeof(T));
+			T *data = (T*)m_realloc(p_Data, iSize * sizeof(T));
 			if (data != nullptr)
 			{
 				p_Data = data;
 				capacity = iSize;
 			} else {
-				T *pData = (T*)malloc(iSize * sizeof(T));
+				T *pData = (T*)m_malloc(iSize * sizeof(T));
 				if (pData != nullptr)
 				{
 					for (uint32_t i = 0; i < size && i < iSize; i++)
@@ -89,7 +89,7 @@ namespace Utilite
 						pData[i] = p_Data[i];
 					}
 
-					free(p_Data);
+					m_free(p_Data);
 					p_Data = pData;
 					capacity = iSize;
 				} else { throw std::bad_alloc(); }

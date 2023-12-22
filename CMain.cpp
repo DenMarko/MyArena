@@ -13,6 +13,7 @@ namespace SpaceMain
 
 		IsShowAbout = false;
 
+		gSetting = make_shared<CSetting>();
 		gWin = make_shared<SpaceWin::CWinWin>(hInst);
 		gDevice3D = make_shared<Space3D::CDevice3D>();
 
@@ -41,7 +42,6 @@ namespace SpaceMain
 		}
 
 		gImGui = make_shared<SpaceUI::CImGui>();
-		gSetting = make_shared<CSetting>();
 		gSetting->SetStile();
 
 		gImGui->Init(gWin->GetHandle(), gDevice3D->GetDevice(), gDevice3D->GetContext());

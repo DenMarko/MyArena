@@ -43,7 +43,7 @@ C_Timer::~C_Timer()
 	std::lock_guard<std::mutex> Lock(mMutex);
 	for (auto iter = mLoopTimer.begin(); iter != mLoopTimer.end(); iter++)
 	{
-		delete(*iter);
+		m_delete(*iter);
 	}
 	mLoopTimer.clear();
 }
@@ -90,7 +90,7 @@ void C_Timer::RunFrame()
 			{
 				pTimer->mListener->OnTimerEnd(pTimer->m_pData);
 				iter = mLoopTimer.erase(iter);
-				delete pTimer;
+				m_delete( pTimer);
 				continue;
 			}
 			pTimer->mInExec = false;
@@ -112,7 +112,7 @@ void C_Timer::RunFrame()
 ITimer *C_Timer::CreateTimer(const std::shared_ptr<ITimerEvent> &pCallBack, float fInterval, void * pData)
 {
 	std::unique_lock<std::mutex> Lock(mMutex);
-	ITimer *pTimer = new ITimer();
+	ITimer *pTimer = m_new<ITimer>();
 	float to_exec = static_cast<float>(getSimulateTime()) + fInterval;
 
 	pTimer->Initialize(pCallBack, fInterval, to_exec, pData);
@@ -143,7 +143,7 @@ void C_Timer::KillTimer(ITimer * pTimer)
 		if (pTimer == (*iter))
 		{
 			iter = mLoopTimer.erase(iter);
-			delete pTimer;
+			m_delete( pTimer);
 			break;
 		}
 	}
