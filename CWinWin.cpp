@@ -1,4 +1,5 @@
 #include "CWinWin.h"
+#include "CMain.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -86,6 +87,34 @@ namespace SpaceWin
 
 		ShowWindow(hWind, iCmdShow);
 		UpdateWindow(hWind);
+	}
+
+	ImGuiViewportP *FindViewportByHandleWin(HWND hWnd)
+	{
+		auto cont = ImGui::GetCurrentContext();
+		
+		for(ImGuiViewportP* v : cont->Viewports)
+			if(v->PlatformHandle == hWnd)
+				return v;
+
+		return nullptr;
+	}
+
+	bool CWinWin::IsWindowActive()
+	{
+		HWND focuseWind = GetForegroundWindow();
+		if(focuseWind == nullptr)
+			return false;
+
+		if (focuseWind == hWind)
+			return true;
+
+		if (FindViewportByHandleWin(focuseWind) != nullptr)
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	LRESULT WINAPI CWinWin::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)

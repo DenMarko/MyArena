@@ -75,6 +75,7 @@ namespace Space3D
 		{
 		case VSYNCH_DISABLE:
 			g_pSwapChain->Present(0, 0);
+			Sleep(1);
 			break;
 		case VSYNCH_ENABLE:
 			g_pSwapChain->Present(1, 0);

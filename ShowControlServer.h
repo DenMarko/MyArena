@@ -8,7 +8,7 @@
 #define RELEASE(iface) \
 if(iface != nullptr) \
 { \
-	m_delete(iface); \
+	mem::Delete(iface); \
 	iface = nullptr; \
 }
 

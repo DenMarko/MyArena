@@ -1,4 +1,5 @@
 #include "CImGui.h"
+#include "C_CUrl.h"
 
 namespace SpaceUI
 {
@@ -169,11 +170,34 @@ namespace SpaceUI
 
 	bool CImGui::IsMouseHovered(const ImVec2& MousePos, const ImVec2& pos_min, const ImVec2& pos_max)
 	{
+		auto gfDraw = ImGui::GetForegroundDrawList();
+		bool ret = false;
+
 		if (MousePos.x >= pos_min.x && MousePos.x <= pos_max.x && MousePos.y >= pos_min.y && MousePos.y <= pos_max.y)
 		{
-			return true;
+			ret = true;
 		}
-		return false;
+
+		ImRect bb(pos_min, pos_max);
+		ImVec2 center = bb.GetCenter();
+
+		center.x = center.x - 0.5f;
+		center.y = center.y - 0.5f;
+
+		float text_ex = ((g_pGlob->pFont->FontSize * 1.2f) * 0.5f * 0.7071f - 1.f);
+		ImU32 text_col = ImGui::GetColorU32(ImGuiCol_Text);
+
+		ImGuiTextBuffer buf;
+		buf.append(gLangManager->GetLang("Server response time: "));
+		if(pUrls->GetServerResponseTime() == -1)
+			buf.append(gLangManager->GetLang("Connected timeout"));
+		else
+			buf.appendf("%.1f msec", (pUrls->GetServerResponseTime() * 1000));
+
+		ImVec2 textSize = ImGui::CalcTextSize(buf.c_str());
+		gfDraw->AddText(ImVec2(center.x - (textSize.x / 2.0f), center.y + -text_ex), text_col, buf.c_str());
+
+		return ret;
 	}
 
 	bool CImGui::IsCloseButtomDown(const ImVec2& MousePos, const ImVec2& pos_min, const ImVec2& pos_max)

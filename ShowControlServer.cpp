@@ -39,7 +39,7 @@ CControlServer::CControlServer(ID3D11Device* pDevice) :  g_pDevice(pDevice),
 	if (p_gStatus == nullptr)
 	{
 		prevMap = "none";
-		p_gStatus = m_new<GetStatus>();
+		p_gStatus = mem::New<GetStatus>();
 	}
 
 	HMODULE hM = GetModuleHandle(nullptr);
@@ -77,7 +77,7 @@ void CControlServer::SetStatus()
 		prevMap = Status->data->mapname;
 
 		Utilite::CArray<char> gImgMap;
-		pUrls->LoadImageMap(Status->MapImg, &gImgMap); gImgMap.push('\0');
+		pUrls->LoadImageMap(Status->MapImg, &gImgMap); /*gImgMap.push('\0');*/
 		if (stbi_info_from_memory(reinterpret_cast<const unsigned char*>(gImgMap.data()), gImgMap.Size(), &iX, &iY, &iComp))
 		{
 			if (!LoadBuffer(gImgMap.data(), gImgMap.Size(), &im_texture_url, &im_width_url, &im_height_url))
@@ -243,7 +243,7 @@ void CControlServer::OnUIRender()
 						g_pNotif->Notificatio(res->msg.c_str());
 					}
 
-					m_delete(res);
+					mem::Delete(res);
 				}
 				else
 				{
@@ -265,7 +265,7 @@ void CControlServer::OnUIRender()
 						g_pNotif->Notificatio(res->msg.c_str());
 					}
 
-					m_delete(res);
+					mem::Delete(res);
 				}
 				else
 				{
@@ -286,7 +286,7 @@ void CControlServer::OnUIRender()
 						g_pNotif->Notificatio(res->msg.c_str());
 					}
 
-					m_delete(res);
+					mem::Delete(res);
 				}
 				else
 				{
@@ -329,7 +329,7 @@ void CControlServer::OnUIRender()
 							{
 								g_pNotif->Notificatio(u8"%s", res->msg.c_str());
 							}
-							m_delete(res);
+							mem::Delete(res);
 						});
 					}
 
@@ -394,7 +394,7 @@ TimerResult CControlServer::OnTimer(void *pData)
 	}
 	else if (Status->status == ERRORS)
 	{
-		m_delete(Status);
+		mem::Delete(Status);
 		Status = nullptr;
 		IsStatusReady = true;
 		return Time_Continue;
@@ -410,7 +410,7 @@ TimerResult CControlServer::OnTimer(void *pData)
 		int iY = 0;
 		int iComp = 0;
 		Utilite::CArray<char> gImgMap;
-		pUrls->LoadImageMap(Status->MapImg, &gImgMap); gImgMap.push('\0');
+		pUrls->LoadImageMap(Status->MapImg, &gImgMap); /*gImgMap.push('\0');*/
 		if (stbi_info_from_memory(reinterpret_cast<const unsigned char*>(gImgMap.data()), gImgMap.Size(), &iX, &iY, &iComp))
 		{
 			if (im_texture_url)

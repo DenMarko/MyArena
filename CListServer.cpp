@@ -40,7 +40,7 @@ bool CListServer::LoadData()
 				tok->date_ty_block = Utilite::Date(stats->SServer->server_dateblock);
 			}
 		
-			m_delete(stats);
+			mem::Delete(stats);
 		} else {
 			pTimerLoadData->SetNewInterval(5.0f);
 			return false;

@@ -34,7 +34,7 @@ namespace SpaceMain
 		}
 
 		gWin->CreateWind(Width, Height);
-		if (!gDevice3D->CreateDeviceD3D(gWin->GetHandle()))
+		if (!gDevice3D->CreateDeviceD3D((*gWin)()))
 		{
 			gDevice3D->CleanupDeviceD3D();
 			gWin->Destroy();
@@ -44,7 +44,7 @@ namespace SpaceMain
 		gImGui = make_shared<SpaceUI::CImGui>();
 		gSetting->SetStile();
 
-		gImGui->Init(gWin->GetHandle(), gDevice3D->GetDevice(), gDevice3D->GetContext());
+		gImGui->Init((*gWin)(), gDevice3D->GetDevice(), gDevice3D->GetContext());
 	
 		p_controlServer = make_shared<CControlServer>(gDevice3D->GetDevice());
 		Showlog = make_shared<CShowConsoleLog>();
@@ -77,8 +77,16 @@ namespace SpaceMain
 	int CMain::Loop()
 	{
 		MSG msg;
+		double dCurTime = 0;
+		double iMemUsed = 0;
 		while (!done)
 		{
+			if (!gWin->IsWindowActive())
+			{
+				Sleep(1);
+			}
+
+
 			while (PeekMessage(&msg, nullptr, 0U, 0U, PM_REMOVE))
 			{
 				TranslateMessage(&msg);
@@ -101,7 +109,7 @@ namespace SpaceMain
 			gImGui->Begin();
 
 			const ImGuiViewport* viewport = ImGui::GetMainViewport();
-			gImGui->BeginDockSpace(viewport, gWin->GetHandle());
+			gImGui->BeginDockSpace(viewport, (*gWin)());
 
 			gWin->setTitle(gImGui->IsMouseHovered(g_pGlob->pIO->MousePos, 
 				ImVec2(viewport->WorkPos.x + 120.f, viewport->WorkPos.y + 2.f), 
@@ -126,7 +134,7 @@ namespace SpaceMain
 				ImVec2(viewport->WorkPos.x + (ImGui::GetContentRegionAvail().x - 39.f), viewport->WorkPos.y + 2.f), 
 				ImVec2(viewport->WorkPos.x + (ImGui::GetContentRegionAvail().x - 21.f), viewport->WorkPos.y + 18.f)))
 			{
-				if(IsZoomed(gWin->GetHandle()))
+				if(IsZoomed((*gWin)()))
 					gWin->SystemCommand(SC_RESTORE);
 				else
 					gWin->SystemCommand(SC_MAXIMIZE);
@@ -155,18 +163,26 @@ namespace SpaceMain
 
 			if (IsShowAbout)
 			{
-				ImVec2 vCenter = ImGui::GetMainViewport()->GetCenter();
+				ImVec2 vCenter = viewport->GetCenter();
 				ImVec2 sizeWin = {350.f, 200.f};
 				ImGui::SetNextWindowPos(vCenter, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 				ImGui::SetNextWindowSize(sizeWin, ImGuiCond_Always);
 
 				if (ImGui::Begin(gLangManager->GetLang("About"), &IsShowAbout))
 				{
+					if ((dCurTime + 2.0) <= ImGui::GetTime())
+					{
+						mem::mMemory.mem_compact();
+						dCurTime = ImGui::GetTime();
+						iMemUsed = (static_cast<double>(mem::mMemory.mem_usage()) / 1024.0) / 1024.0;
+					}
+
 					ImGui::Text(gLangManager->GetLang("Version of the components used in the program:"));
 
 					ImGui::Text("ImGui ver: %s", IMGUI_VERSION);
 					ImGui::Text("CURL  ver: %s", LIBCURL_VERSION);
 					ImGui::Text("RAPIDJSON: %s", RAPIDJSON_VERSION_STRING);
+					ImGui::Text("Memory used: %.3f KB", iMemUsed);
 					if (pFileInfo != nullptr)
 					{
 						ImGui::Text("Version program: %d.%d.%d.%d", HIWORD(pFileInfo->dwFileVersionMS), LOWORD(pFileInfo->dwFileVersionMS), HIWORD(pFileInfo->dwFileVersionLS), LOWORD(pFileInfo->dwFileVersionLS));
@@ -191,7 +207,7 @@ namespace SpaceMain
 			gImGui->EndDockSpace();
 			gImGui->End(gDevice3D);
 
-			gDevice3D->VSync(Space3D::VSYNCH_ENABLE);
+			gDevice3D->VSync(Space3D::VSYNCH_DISABLE);
 		}
 		return (int)msg.wParam;
 	}

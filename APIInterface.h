@@ -22,7 +22,7 @@ struct GetConsole
 	{
 		if (console_log)
 		{
-			m_delete(console_log);
+			mem::Delete(console_log);
 		}
 	}
 
@@ -89,7 +89,7 @@ struct GetStatus
 {
 	GetStatus()
 	{
-		data = m_new<GetData>();
+		data = mem::New<GetData>();
 		server_id = 0;
 		server_dateblock = 0;
 		server_daytoblock = 0;
@@ -98,7 +98,7 @@ struct GetStatus
 	}
 	~GetStatus()
 	{
-		m_delete(data);
+		mem::Delete(data);
 	}
 
 	struct GetData*				data;
@@ -123,7 +123,7 @@ struct TokenResult
 	{
 		if(SServer)
 		{
-			m_delete(SServer);
+			mem::Delete(SServer);
 		}
 	}
 

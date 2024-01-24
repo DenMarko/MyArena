@@ -76,7 +76,9 @@ map<const char*, const char*, CPrtCmp> LangUa =
 	{"Activate",						u8"Активувати"},
 	{"Remove",							u8"Видалити"},
 	{"Add server",						u8"Добавити сервер"},
-	{"Paid until",						u8"Сплачено до"}
+	{"Paid until",						u8"Сплачено до"},
+	{"Server response time: ",			u8"Час відповіді сервера: "},
+	{"Connected timeout",				u8"Тайм-аут підключення"}
 };
 
 map<const char*, const char*, CPrtCmp> LangRu = 
@@ -144,7 +146,9 @@ map<const char*, const char*, CPrtCmp> LangRu =
 	{"Activate",						u8"Активировать"},
 	{"Remove",							u8"Удалить"},
 	{"Add server",						u8"Добавить сервер"},
-	{"Paid until",						u8"Оплачен до"}
+	{"Paid until",						u8"Оплачен до"},
+	{"Server response time: ",			u8"Время ответа сервера: "},
+	{"Connected timeout",				u8"Тайм-аут подключения"}
 };
 
 const char *CLangManager::GetLang(const char *str) const

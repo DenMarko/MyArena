@@ -24,7 +24,7 @@ void CShowConsoleLog::AddLog(const char *fmt, ...)
 			LineOffsets.push_back(old_size + 1);
 		}
 	}
-	CheckLimit(lBuf, LineOffsets);
+	//CheckLimit(lBuf, LineOffsets);
 }
 
 void CShowConsoleLog::OnAttach(bool * IsOpen) {}
@@ -99,10 +99,10 @@ void CShowConsoleLog::ExecCmd(const char *cmd)
 		{
 			g_pNotif->Notificatio(res->msg.c_str());
 		}
-		m_delete(res);
+		mem::Delete(res);
 		if(sCmd)
 		{
-			mMemory.mem_free((void *)sCmd);
+			mem::mMemory.mem_free((void *)sCmd);
 		}
 	});
 
@@ -111,7 +111,7 @@ void CShowConsoleLog::ExecCmd(const char *cmd)
 	{
 		if (Stricmp(History[i], cmd) == 0)
 		{
-			m_free(History[i]);
+			mem::Free(History[i]);
 			History.erase(History.begin() + i);
 			break;
 		}
@@ -216,6 +216,6 @@ TimerResult CShowConsoleLog::OnTimer(void *pData)
 			AddLog("%s", con_log->console_log);
 	}
 
-	m_delete(con_log);
+	mem::Delete(con_log);
 	return TimerResult::Time_Continue;
 }

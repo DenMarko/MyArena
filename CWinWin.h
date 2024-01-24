@@ -69,12 +69,16 @@ namespace SpaceWin
 		bool CreateWind(int Width, int Height);
 		void Destroy();
 
-		const HWND GetHandle() { return hWind; }
 		void setTitle(bool t);
 		bool GetResize(size_window &siz);
 		void SystemCommand(WPARAM wParam);
 		void Show(int);
 
+		bool IsWindowActive();
+		const HWND operator() () const
+		{
+			return hWind;
+		}
 	private:
 		static LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 

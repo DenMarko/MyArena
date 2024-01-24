@@ -8,6 +8,8 @@ C_CUrl::C_CUrl() : IsOpen(true)
 {
 	memset(buffer, 0, sizeof(buffer));
 
+	TimeTotal = -1;
+
 	curl_global_init(CURL_GLOBAL_ALL);
 	pUrl = curl_easy_init();
 	if(pUrl == nullptr)
@@ -43,7 +45,7 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 			res_url.append("&token=");
 			res_url.append(curl_easy_escape(pUrl, token->token.c_str(), 0));
 
-			ret = m_new<CmdResult>();
+			ret = mem::New<CmdResult>();
 
 			if (!Curl_Perform(res_url, data))
 			{
@@ -51,12 +53,12 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 				break;
 			}
 
-			data.push('\0');
+			//data.push('\0');
 			rapidjson::Document doc;
 			rapidjson::ParseResult ok = doc.Parse(data.data());
 			if (!ok)
 			{
-				IMGUI_DEBUG_LOG("JSON parse error: (%u)%s \n", ok.Offset(), rapidjson::GetParseError_En(ok.Code()));
+				IMGUI_DEBUG_LOG("JSON parse error (%u): %s\n", ok.Offset(), rapidjson::GetParseError_En(ok.Code()));
 				((CmdResult *)ret)->status = ERRORS;
 				break;
 			}
@@ -106,19 +108,19 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 				res_url.append("&token=");
 				res_url.append(curl_easy_escape(pUrl, token->token.c_str(), 0));
 
-				ret = m_new<CmdResult>();
+				ret = mem::New<CmdResult>();
 				if (!Curl_Perform(res_url, data))
 				{
 					((CmdResult *)ret)->status = ERRORS;
 					break;
 				}
 
-				data.push('\0');
+				//data.push('\0');
 				rapidjson::Document doc;
 				rapidjson::ParseResult ok = doc.Parse(data.data());
 				if (!ok)
 				{
-					IMGUI_DEBUG_LOG("JSON parse error: (%u)%s \n", ok.Offset(), rapidjson::GetParseError_En(ok.Code()));
+					IMGUI_DEBUG_LOG("JSON parse error (%u): %s\n", ok.Offset(), rapidjson::GetParseError_En(ok.Code()));
 					((CmdResult *)ret)->status = ERRORS;
 					break;
 				}
@@ -172,7 +174,7 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 					break;
 				}
 
-				data.push('\0');
+				//data.push('\0');
 				ret = GetParseStatus(data);
 			}
 			break;
@@ -183,7 +185,7 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 				res_url.append("&token=");
 				res_url.append(curl_easy_escape(pUrl, token->token.c_str(), 0));
 
-				ret = m_new<CmdResult>();
+				ret = mem::New<CmdResult>();
 
 				if (!Curl_Perform(res_url, data))
 				{
@@ -191,12 +193,12 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 					break;
 				}
 
-				data.push('\0');
+				//data.push('\0');
 				rapidjson::Document doc;
 				rapidjson::ParseResult ok = doc.Parse(data.data());
 				if (!ok)
 				{
-					IMGUI_DEBUG_LOG("JSON parse error: (%u)%s \n", ok.Offset(), rapidjson::GetParseError_En(ok.Code()));
+					IMGUI_DEBUG_LOG("JSON parse error (%u): %s\n", ok.Offset(), rapidjson::GetParseError_En(ok.Code()));
 					((CmdResult *)ret)->status = ERRORS;
 					break;
 				}
@@ -249,14 +251,14 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 					break;
 				}
 
-				ret = m_new<GetMapList>();
+				ret = mem::New<GetMapList>();
 
-				data.push('\0');
+				//data.push('\0');
 				rapidjson::Document doc;
 				rapidjson::ParseResult ok = doc.Parse(data.data());
 				if (!ok)
 				{
-					IMGUI_DEBUG_LOG("JSON parse error: (%u)%s \n", ok.Offset(), rapidjson::GetParseError_En(ok.Code()));
+					IMGUI_DEBUG_LOG("JSON parse error (%u): %s\n", ok.Offset(), rapidjson::GetParseError_En(ok.Code()));
 					((GetMapList *)ret)->status = ERRORS;
 					break;
 				}
@@ -318,7 +320,7 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 					break;
 				}
 
-				data.push('\0');
+				//data.push('\0');
 				ret = GetParseConsole(data);
 				break;
 			}
@@ -331,7 +333,7 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 				res_url.append("&token=");
 				res_url.append(curl_easy_escape(pUrl, token->token.c_str(), 0));
 
-				ret = m_new<CmdResult>();
+				ret = mem::New<CmdResult>();
 
 				if (!Curl_Perform(res_url, data))
 				{
@@ -339,12 +341,12 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 					break;
 				}
 
-				data.push('\0');
+				//data.push('\0');
 				rapidjson::Document doc;
 				rapidjson::ParseResult ok = doc.Parse(data.data());
 				if (!ok)
 				{
-					IMGUI_DEBUG_LOG("JSON parse error: (%u)%s \n", ok.Offset(), rapidjson::GetParseError_En(ok.Code()));
+					IMGUI_DEBUG_LOG("JSON parse error (%u): %s\n", ok.Offset(), rapidjson::GetParseError_En(ok.Code()));
 					((CmdResult *)ret)->status = ERRORS;
 					break;
 				}
@@ -396,7 +398,7 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 				res_url.append("&token=");
 				res_url.append(curl_easy_escape(pUrl, token->token.c_str(), 0));
 
-				ret = m_new<CmdResult>();
+				ret = mem::New<CmdResult>();
 
 				if (!Curl_Perform(res_url, data))
 				{
@@ -404,12 +406,12 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 					break;
 				}
 
-				data.push('\0');
+				//data.push('\0');
 				rapidjson::Document doc;
 				rapidjson::ParseResult ok = doc.Parse(data.data());
 				if (!ok)
 				{
-					IMGUI_DEBUG_LOG("JSON parse error: (%u)%s \n", ok.Offset(), rapidjson::GetParseError_En(ok.Code()));
+					IMGUI_DEBUG_LOG("JSON parse error (%u): %s\n", ok.Offset(), rapidjson::GetParseError_En(ok.Code()));
 					((CmdResult *)ret)->status = ERRORS;
 					break;
 				}
@@ -468,7 +470,7 @@ void *C_CUrl::StatusToken(const char *cToken)
 	res_url.append(curl_easy_escape(pUrl, cToken, 0));
 	res_url.append("&ver=2");
 
-	TokenResult *res = m_new<TokenResult>();
+	TokenResult *res = mem::New<TokenResult>();
 
 	if (!Curl_Perform(res_url, mData))
 	{
@@ -476,7 +478,7 @@ void *C_CUrl::StatusToken(const char *cToken)
 		res->msg.append(gLangManager->GetLang("Connection error, try again later!"));
 		return res;
 	}
-	mData.push('\0');
+	//mData.push('\0');
 	GetStatus *stats = reinterpret_cast<GetStatus *>(this->GetParseStatus(mData));
 
 	if (stats->status == OK)
@@ -498,13 +500,13 @@ void *C_CUrl::StatusToken(const char *cToken)
 void *C_CUrl::GetParseConsole(Utilite::CArray<char> &mData)
 {
 	static std::string oldstr;
-	GetConsole *con = m_new<GetConsole>();
+	GetConsole *con = mem::New<GetConsole>();
 
 	rapidjson::Document doc;
 	rapidjson::ParseResult ok = doc.Parse(mData.data());
 	if (!ok)
 	{
-		IMGUI_DEBUG_LOG("JSON parse error: (%u)%s \n", ok.Offset(), rapidjson::GetParseError_En(ok.Code()));
+		IMGUI_DEBUG_LOG("JSON parse error (%u): %s\n", ok.Offset(), rapidjson::GetParseError_En(ok.Code()));
 		con->s = ERRORS;
 		return con;
 	}
@@ -570,13 +572,13 @@ void *C_CUrl::GetParseConsole(Utilite::CArray<char> &mData)
 
 void *C_CUrl::GetParseStatus(Utilite::CArray<char> &mData)
 {
-	GetStatus *res = m_new<GetStatus>();
+	GetStatus *res = mem::New<GetStatus>();
 
 	rapidjson::Document doc;
 	rapidjson::ParseResult ok = doc.Parse(mData.data());
 	if (!ok)
 	{
-		IMGUI_DEBUG_LOG("JSON parse error: (%u)%s \n", ok.Offset(), rapidjson::GetParseError_En(ok.Code()));
+		IMGUI_DEBUG_LOG("JSON parse error (%u): %s\n", ok.Offset(), rapidjson::GetParseError_En(ok.Code()));
 		res->status = ERRORS;
 		return res;
 	}
@@ -719,7 +721,7 @@ void C_CUrl::OnUIRender()
 					g_pNotif->Notificatio(res->msg.c_str());
 					timer->CreateTimer(make_shared<TimeCallBack>(), 3.2f, &IsOpen);
 				}
-				m_delete(res);
+				mem::Delete(res);
 			}
 		}
 

@@ -297,7 +297,6 @@ void CSetting::SetStile()
 	}
 
 	auto &style = ImGui::GetStyle();
-
 	if (_glob_.pIO->ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
 		style.WindowRounding = 2.f;

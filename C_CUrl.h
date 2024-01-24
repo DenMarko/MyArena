@@ -65,6 +65,10 @@ public:
 			}
 		}
 	}
+	inline double GetServerResponseTime()
+	{
+		return TimeTotal;
+	}
 
 public:
 	virtual void OnAttach(bool *IsOpen) override {}
@@ -92,28 +96,34 @@ private:
 
 	bool Curl_Perform(const std::string &res_url, Utilite::CArray<char> &data)
 	{
+		bool ret = true;
 		CURLcode cod;
 
 		curl_easy_setopt(pUrl, CURLOPT_URL, res_url.c_str());
 		curl_easy_setopt(pUrl, CURLOPT_WRITEFUNCTION, WriteData);
 		curl_easy_setopt(pUrl, CURLOPT_WRITEDATA, &data);
 
+		curl_easy_setopt(pUrl, CURLOPT_VERBOSE, 1L);
+
 		cod = curl_easy_perform(pUrl);
-		curl_easy_reset(pUrl);
 
 		if (cod != CURLE_OK)
 		{
 			IMGUI_DEBUG_LOG("curl error: %s\n", curl_easy_strerror(cod));
-			return false;
+			TimeTotal = -1;
+			ret = false;
+		} else {
+			curl_easy_getinfo(pUrl, CURLINFO_TOTAL_TIME, &TimeTotal);
 		}
 
-		return true;
+		curl_easy_reset(pUrl);
+		return ret;
 	}
 
 	static size_t WriteData(char *str, size_t size, size_t nmemb, Utilite::CArray<char> *pData)
 	{
 		size_t new_size = size*nmemb;
-		pData->push(str, size*nmemb);
+		pData->push(str, new_size);
 
 		return new_size;
 	}
@@ -148,7 +158,7 @@ private:
 	void CopiData(char **destStr, const char *sourceStr)
 	{
 		const size_t len = strlen(sourceStr) + 1;
-		*destStr = m_alloc<char>(len);
+		*destStr = mem::Alloc<char>(len);
 		strcpy_s(*destStr, len, sourceStr);
 	}
 
@@ -233,6 +243,7 @@ private:
 	shared_ptr<STokenList> token;
 
 	char buffer[256];
+	double TimeTotal;
 };
 
 extern shared_ptr<C_CUrl> pUrls;
