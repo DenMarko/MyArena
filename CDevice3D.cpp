@@ -33,9 +33,14 @@ namespace Space3D
 		const D3D_FEATURE_LEVEL featureLevelArray[2] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0, };
 		HRESULT res = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, createDeviceFlags, featureLevelArray, 2, D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &featureLevel, &g_pd3dDeviceContext);
 		if (res == DXGI_ERROR_UNSUPPORTED)
+		{
 			res = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, createDeviceFlags, featureLevelArray, 2, D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &featureLevel, &g_pd3dDeviceContext);
+		}
+
 		if (res != S_OK)
+		{
 			return false;
+		}
 
 		CreateRenderTarget();
 		return true;
@@ -44,9 +49,23 @@ namespace Space3D
 	void CDevice3D::CleanupDeviceD3D()
 	{
 		CleanupRenderTarget();
-		if (g_pSwapChain) { g_pSwapChain->Release(); g_pSwapChain = nullptr; }
-		if (g_pd3dDeviceContext) { g_pd3dDeviceContext->Release(); g_pd3dDeviceContext = nullptr; }
-		if (g_pd3dDevice) { g_pd3dDevice->Release(); g_pd3dDevice = nullptr; }
+		if (g_pSwapChain)
+		{
+			g_pSwapChain->Release();
+			g_pSwapChain = nullptr;
+		}
+
+		if (g_pd3dDeviceContext)
+		{
+			g_pd3dDeviceContext->Release();
+			g_pd3dDeviceContext = nullptr;
+		}
+
+		if (g_pd3dDevice)
+		{
+			g_pd3dDevice->Release();
+			g_pd3dDevice = nullptr;
+		}
 	}
 
 	void CDevice3D::CreateRenderTarget()
@@ -59,7 +78,11 @@ namespace Space3D
 
 	void CDevice3D::CleanupRenderTarget()
 	{
-		if (g_mainRenderTargetView) { g_mainRenderTargetView->Release(); g_mainRenderTargetView = nullptr; }
+		if (g_mainRenderTargetView)
+		{
+			g_mainRenderTargetView->Release();
+			g_mainRenderTargetView = nullptr;
+		}
 	}
 
 	void CDevice3D::ResizeBuffer(SpaceWin::size_window &sizes)
@@ -75,7 +98,7 @@ namespace Space3D
 		{
 		case VSYNCH_DISABLE:
 			g_pSwapChain->Present(0, 0);
-			Sleep(1);
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			break;
 		case VSYNCH_ENABLE:
 			g_pSwapChain->Present(1, 0);

@@ -29,9 +29,7 @@ public:
 	{}
 };
 
-CControlServer::CControlServer(ID3D11Device* pDevice) :  g_pDevice(pDevice),
-		p_gMaps(nullptr), p_gStatus(nullptr), Status(nullptr),
-		im_texture(nullptr), im_texture_url(nullptr), IsStatusReady(true)
+CControlServer::CControlServer(ID3D11Device* pDevice) : g_pDevice(pDevice), p_gMaps(nullptr), p_gStatus(nullptr), Status(nullptr), im_texture(nullptr), im_texture_url(nullptr), IsStatusReady(true)
 {
 	timer->CreateTimer(make_shared<CLoadDataStatus>(), 0.1f, this);
 	timer->CreateTimer(make_shared<CLoadDataMap>(), 0.1f, this);
@@ -77,7 +75,7 @@ void CControlServer::SetStatus()
 		prevMap = Status->data->mapname;
 
 		Utilite::CArray<char> gImgMap;
-		pUrls->LoadImageMap(Status->MapImg, &gImgMap); /*gImgMap.push('\0');*/
+		pUrls->LoadImageMap(Status->MapImg, &gImgMap);
 		if (stbi_info_from_memory(reinterpret_cast<const unsigned char*>(gImgMap.data()), gImgMap.Size(), &iX, &iY, &iComp))
 		{
 			if (!LoadBuffer(gImgMap.data(), gImgMap.Size(), &im_texture_url, &im_width_url, &im_height_url))
@@ -105,7 +103,9 @@ void CControlServer::SetMaps()
 	{
 		p_gMaps = reinterpret_cast<GetMapList*>(pUrls->GetData(GET_MAPS));
 		if(p_gMaps != nullptr)
+		{
 			std::sort(p_gMaps->maps.begin(), p_gMaps->maps.end());
+		}
 	}
 }
 
@@ -410,7 +410,7 @@ TimerResult CControlServer::OnTimer(void *pData)
 		int iY = 0;
 		int iComp = 0;
 		Utilite::CArray<char> gImgMap;
-		pUrls->LoadImageMap(Status->MapImg, &gImgMap); /*gImgMap.push('\0');*/
+		pUrls->LoadImageMap(Status->MapImg, &gImgMap);
 		if (stbi_info_from_memory(reinterpret_cast<const unsigned char*>(gImgMap.data()), gImgMap.Size(), &iX, &iY, &iComp))
 		{
 			if (im_texture_url)

@@ -23,7 +23,7 @@ namespace SpaceWin
 			g_Height = h;
 			IsEmpty = true;
 		}
-		bool empty() { return IsEmpty; }
+		bool empty() { return !IsEmpty; }
 		size_window& operator = (const size_window &val)
 		{
 			if (this != &val)

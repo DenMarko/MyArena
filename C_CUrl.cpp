@@ -53,7 +53,6 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 				break;
 			}
 
-			//data.push('\0');
 			rapidjson::Document doc;
 			rapidjson::ParseResult ok = doc.Parse(data.data());
 			if (!ok)
@@ -115,7 +114,6 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 					break;
 				}
 
-				//data.push('\0');
 				rapidjson::Document doc;
 				rapidjson::ParseResult ok = doc.Parse(data.data());
 				if (!ok)
@@ -174,7 +172,6 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 					break;
 				}
 
-				//data.push('\0');
 				ret = GetParseStatus(data);
 			}
 			break;
@@ -193,7 +190,6 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 					break;
 				}
 
-				//data.push('\0');
 				rapidjson::Document doc;
 				rapidjson::ParseResult ok = doc.Parse(data.data());
 				if (!ok)
@@ -253,7 +249,6 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 
 				ret = mem::New<GetMapList>();
 
-				//data.push('\0');
 				rapidjson::Document doc;
 				rapidjson::ParseResult ok = doc.Parse(data.data());
 				if (!ok)
@@ -320,7 +315,6 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 					break;
 				}
 
-				//data.push('\0');
 				ret = GetParseConsole(data);
 				break;
 			}
@@ -341,7 +335,6 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 					break;
 				}
 
-				//data.push('\0');
 				rapidjson::Document doc;
 				rapidjson::ParseResult ok = doc.Parse(data.data());
 				if (!ok)
@@ -406,7 +399,6 @@ void *C_CUrl::GetData(COMMAND comand, const char *str)
 					break;
 				}
 
-				//data.push('\0');
 				rapidjson::Document doc;
 				rapidjson::ParseResult ok = doc.Parse(data.data());
 				if (!ok)

@@ -83,9 +83,8 @@ namespace SpaceMain
 		{
 			if (!gWin->IsWindowActive())
 			{
-				Sleep(1);
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			}
-
 
 			while (PeekMessage(&msg, nullptr, 0U, 0U, PM_REMOVE))
 			{
@@ -101,7 +100,8 @@ namespace SpaceMain
 
 			{
 				SpaceWin::size_window winSize;
-				if (gWin->GetResize(winSize)) {
+				if (gWin->GetResize(winSize))
+				{
 					gDevice3D->ResizeBuffer(winSize);
 				}
 			}

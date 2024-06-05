@@ -192,7 +192,9 @@ private:
 				{
 					const char c = word_start[-1];
 					if (c == ' ' || c == '\t' || c == ',' || c == ';')
+					{
 						break;
+					}
 					word_start--;
 				}
 

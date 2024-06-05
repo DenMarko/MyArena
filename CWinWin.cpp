@@ -63,7 +63,7 @@ namespace SpaceWin
 
 	bool CWinWin::GetResize(size_window &siz)
 	{
-		if (resiz.empty())
+		if (!resiz.empty())
 		{
 			siz = resiz;
 			resiz.reset();

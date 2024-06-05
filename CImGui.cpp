@@ -170,9 +170,7 @@ namespace SpaceUI
 
 	bool CImGui::IsMouseHovered(const ImVec2& MousePos, const ImVec2& pos_min, const ImVec2& pos_max)
 	{
-		auto gfDraw = ImGui::GetForegroundDrawList();
 		bool ret = false;
-
 		if (MousePos.x >= pos_min.x && MousePos.x <= pos_max.x && MousePos.y >= pos_min.y && MousePos.y <= pos_max.y)
 		{
 			ret = true;
@@ -193,9 +191,11 @@ namespace SpaceUI
 			buf.append(gLangManager->GetLang("Connected timeout"));
 		else
 			buf.appendf("%.1f msec", (pUrls->GetServerResponseTime() * 1000));
-
+#ifndef IMGUI_DISABLE_DEBUG_TOOLS
+		buf.appendf(" (FPS %.1f)", g_pGlob->pIO->Framerate);
+#endif
 		ImVec2 textSize = ImGui::CalcTextSize(buf.c_str());
-		gfDraw->AddText(ImVec2(center.x - (textSize.x / 2.0f), center.y + -text_ex), text_col, buf.c_str());
+		ImGui::GetForegroundDrawList()->AddText(ImVec2(center.x - (textSize.x / 2.0f), center.y + -text_ex), text_col, buf.c_str());
 
 		return ret;
 	}
