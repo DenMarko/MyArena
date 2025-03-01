@@ -1,24 +1,27 @@
 #pragma once
 #include <string>
 
+#define TEXT__(x) L##x
+#define TEXT_(x) TEXT__(x)
+
 class CBaseException
 {
 public:
 
-	CBaseException(const char *file,
+	CBaseException(const wchar_t *file,
 		unsigned int line,
-		const std::string &note = "") :
+		const std::wstring &note = L"") :
 		note(note),
 		file(file),
 		line(line)
 	{}
 
-	const std::string &GetNote() const
+	const std::wstring &GetNote() const
 	{
 		return note;
 	}
 
-	const std::string &GetFile() const
+	const std::wstring &GetFile() const
 	{
 		return file;
 	}
@@ -28,17 +31,16 @@ public:
 		return line;
 	}
 
-	std::string GetLocation() const
+	std::wstring GetLocation() const
 	{
-		return std::string("Line [") + std::to_string(line) + "] in " + file;
+		return std::wstring(L"Line [") + std::to_wstring(line) + L"] in " + file;
 	}
 
-	virtual std::string GetFullMessage() const = 0;
-	virtual std::string GetExceptionType() const = 0;
+	virtual std::wstring GetFullMessage() const = 0;
+	virtual std::wstring GetExceptionType() const = 0;
 
 private:
-	std::string note;
-	std::string file;
+	std::wstring note;
+	std::wstring file;
 	unsigned int line;
 };
-

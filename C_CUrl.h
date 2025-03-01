@@ -25,15 +25,15 @@ class C_CUrl : public CUIRender
 	class Exception : public CBaseException
 	{
 	public:
-		Exception(const char *file, int line, const char *note) : CBaseException(file, line, note)
+		Exception(const wchar_t *file, int line, const wchar_t *note) : CBaseException(file, line, note)
 		{}
-		virtual std::string GetFullMessage() const override
+		virtual std::wstring GetFullMessage() const override
 		{
-			return GetNote() + "\nAt: " + GetLocation();
+			return GetNote() + L"\nAt: " + GetLocation();
 		}
-		virtual std::string GetExceptionType() const override
+		virtual std::wstring GetExceptionType() const override
 		{
-			return "CURL Exception";
+			return std::wstring(L"CURL Exception");
 		}
 	};
 
@@ -81,6 +81,8 @@ private:
 	void CheckToken();
 	void *GetParseConsole(Utilite::CArray<char> &data);
 	void *GetParseStatus(Utilite::CArray<char> &data);
+	bool Curl_Perform(const std::string &res_url, Utilite::CArray<char> &data);
+	unsigned int findSubstring(const std::string& str1, const std::string& str2);
 
 	void CheckBedTocken()
 	{
@@ -94,65 +96,12 @@ private:
 		}
 	}
 
-	bool Curl_Perform(const std::string &res_url, Utilite::CArray<char> &data)
-	{
-		bool ret = true;
-		CURLcode cod;
-
-		curl_easy_setopt(pUrl, CURLOPT_URL, res_url.c_str());
-		curl_easy_setopt(pUrl, CURLOPT_WRITEFUNCTION, WriteData);
-		curl_easy_setopt(pUrl, CURLOPT_WRITEDATA, &data);
-
-		curl_easy_setopt(pUrl, CURLOPT_VERBOSE, 1L);
-
-		cod = curl_easy_perform(pUrl);
-
-		if (cod != CURLE_OK)
-		{
-			IMGUI_DEBUG_LOG("curl error: %s\n", curl_easy_strerror(cod));
-			TimeTotal = -1;
-			ret = false;
-		} else {
-			curl_easy_getinfo(pUrl, CURLINFO_TOTAL_TIME, &TimeTotal);
-		}
-
-		curl_easy_reset(pUrl);
-		return ret;
-	}
-
 	static size_t WriteData(char *str, size_t size, size_t nmemb, Utilite::CArray<char> *pData)
 	{
 		size_t new_size = size*nmemb;
 		pData->push(str, new_size);
 
 		return new_size;
-	}
-
-	unsigned int findSubstring(const std::string& str1, const std::string& str2)
-	{
-		auto iter1 = str1.begin();
-		auto iter2 = str2.begin();
-		unsigned int j = 0;
-
-		while (iter1 != str1.end() && iter2 != str2.end())
-		{
-			if (*iter1 == *iter2)
-			{
-				iter2++;
-			}
-			else
-			{
-				j = distance(str2.begin(), iter2);
-				if (j < 300)
-				{
-					iter1 -= j;
-					iter2 = str2.begin();
-				}
-			}
-			iter1++;
-		}
-
-		return distance(str2.begin(), iter2);
 	}
 
 	void CopiData(char **destStr, const char *sourceStr)

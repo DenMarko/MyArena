@@ -96,7 +96,7 @@ void C_Timer::RunFrame()
 			pTimer->mInExec = false;
 			if (pTimer->fSetNewInterval)
 			{
-				IMGUI_DEBUG_LOG("old interval: %f\nnew interval: %f\n", pTimer->mInterval, pTimer->fSetNewInterval);
+				IMGUI_DEBUG_LOG("old interval: %f new interval: %f\n", pTimer->mInterval, pTimer->fSetNewInterval);
 				if(pTimer->mInterval != pTimer->fSetNewInterval)
 					pTimer->mInterval = pTimer->fSetNewInterval;
 

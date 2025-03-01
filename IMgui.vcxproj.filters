@@ -19,6 +19,9 @@
     <Filter Include="ImGui_docking">
       <UniqueIdentifier>{e79604e0-d66b-495f-93cd-3ece36dbddd9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="break_pad">
+      <UniqueIdentifier>{26484122-2bb8-41cb-8a5a-eda2fa8be299}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -83,6 +86,15 @@
     </ClCompile>
     <ClCompile Include="CMemory.cpp">
       <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\source\breakpad-chrome_64\src\client\windows\handler\exception_handler.cc">
+      <Filter>break_pad</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\source\breakpad-chrome_64\src\client\windows\crash_generation\crash_generation_client.cc">
+      <Filter>break_pad</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\source\breakpad-chrome_64\src\common\windows\guid_string.cc">
+      <Filter>break_pad</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -10,52 +10,34 @@
 
 namespace SpaceMain
 {
+	class _threat 
+	{
+	public:
+		_threat();
+		~_threat();
+
+	private:
+		shared_ptr<thread> m_Thread;
+		atomic<bool> m_IsPendingExit;
+		mutex m_Mutex;
+		condition_variable m_CondVar;
+	};
+
 	class CMain
 	{
-		class _threat 
-		{
-		public:
-			_threat() : m_IsPendingExit(false)
-			{
-				m_Thread = make_shared<thread>([this]() {
-					while (!m_IsPendingExit)
-					{
-						unique_lock<mutex> Lock(m_Mutex);
-						m_CondVar.wait_for(Lock, chrono::milliseconds(10));
-						timer->GlobalFrame(pTime->GetTime());
-					}
-				});
-
-			}
-			~_threat()
-			{
-				if (!m_IsPendingExit)
-				{
-					m_IsPendingExit = true;
-					m_CondVar.notify_one();
-					m_Thread->join();
-				}
-			}
-
-		private:
-			shared_ptr<thread> m_Thread;
-			atomic<bool> m_IsPendingExit;
-			mutex m_Mutex;
-			condition_variable m_CondVar;
-		};
 
 		class Exception : public CBaseException
 		{
 		public:
-			Exception(const char *file, int line, const char *note) : CBaseException(file, line, note)
+			Exception(const wchar_t *file, int line, const wchar_t *note) : CBaseException(file, line, note)
 			{}
-			virtual std::string GetFullMessage() const override
+			virtual std::wstring GetFullMessage() const override
 			{
-				return GetNote() + "\nAt: " + GetLocation();
+				return GetNote() + L"\nAt: " + GetLocation();
 			}
-			virtual std::string GetExceptionType() const override
+			virtual std::wstring GetExceptionType() const override
 			{
-				return "CMain Exception";
+				return std::wstring(L"CMain Exception");
 			}
 		};
 	public:
@@ -72,7 +54,7 @@ namespace SpaceMain
 			UI->OnAttach(IsOpen);
 		}
 
-
+		void GetResourceInfo(HINSTANCE hInst);
 	private:
 		vector<shared_ptr<CUIRender>> m_RenderSteck;
 
@@ -94,5 +76,6 @@ namespace SpaceMain
 		unique_ptr<_threat> th;
 
 		VS_FIXEDFILEINFO *pFileInfo;
+		string pVersionProg;
 	};
 }

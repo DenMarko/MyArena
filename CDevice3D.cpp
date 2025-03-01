@@ -2,7 +2,7 @@
 
 namespace Space3D
 {
-	CDevice3D::CDevice3D() : g_pd3dDevice(nullptr), g_pd3dDeviceContext(nullptr), g_pSwapChain(nullptr), g_mainRenderTargetView(nullptr)
+	CDevice3D::CDevice3D() : g_pd3dDevice(nullptr), g_pd3dDeviceContext(nullptr), g_pSwapChain(nullptr), g_mainRenderTargetView(nullptr), g_SwapChainOccluded(false)
 	{
 	}
 
@@ -10,7 +10,7 @@ namespace Space3D
 	{
 	}
 
-	bool CDevice3D::CreateDeviceD3D(HWND hWnd)
+	void CDevice3D::CreateDeviceD3D(HWND hWnd)
 	{
 		DXGI_SWAP_CHAIN_DESC sd;
 		ZeroMemory(&sd, sizeof(sd));
@@ -39,11 +39,10 @@ namespace Space3D
 
 		if (res != S_OK)
 		{
-			return false;
+			throw Exception(TEXT_(__FILE__), __LINE__, L"Failed to create Device Direct 3D.");
 		}
 
 		CreateRenderTarget();
-		return true;
 	}
 
 	void CDevice3D::CleanupDeviceD3D()
@@ -92,18 +91,30 @@ namespace Space3D
 		CreateRenderTarget();
 	}
 
+	bool CDevice3D::SwapChainOccluded()
+	{
+		if (g_SwapChainOccluded && (g_pSwapChain->Present(0, DXGI_PRESENT_TEST) == DXGI_STATUS_OCCLUDED))
+		{
+			return true;
+		}
+		g_SwapChainOccluded = false;
+		return false;
+	}
+
 	void CDevice3D::VSync(VSYNCH synch)
 	{
+		HRESULT hr = 0;
 		switch (synch)
 		{
 		case VSYNCH_DISABLE:
-			g_pSwapChain->Present(0, 0);
+			hr = g_pSwapChain->Present(0, 0);
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			break;
 		case VSYNCH_ENABLE:
-			g_pSwapChain->Present(1, 0);
+			hr = g_pSwapChain->Present(1, 0);
 			break;
 		}
+		g_SwapChainOccluded = (hr == DXGI_STATUS_OCCLUDED);
 	}
 
 	void CDevice3D::ClearRender(const float* clear)

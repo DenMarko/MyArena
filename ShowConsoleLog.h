@@ -5,14 +5,14 @@
 #include "C_Time.h"
 #include "C_CUrl.h"
 
-class CShowConsoleLog : public ITimerEvent,
-						public CUIRender
+class CShowConsoleLog : public ITimerEvent, public CUIRender
 {
 public:
 	CShowConsoleLog()
 	{
 		memset(InputBuf, 0, sizeof(InputBuf));
 		HistoryPos = -1;
+		Commands.push_back("LIMIT");
 		Clear();
 	}
 
@@ -44,24 +44,7 @@ private:
 		return console->TextEditCallback(data);
 	}
 
-	void CheckLimit(ImGuiTextBuffer &pBuf, ImVector<int> &pLineOffset)
-	{
-		if (pLineOffset.size() > 2500)
-		{
-			int val = pLineOffset[0];
-			pBuf.Buf.erase(pBuf.Buf.begin(), pBuf.Buf.begin()+val);
-
-			pLineOffset.erase(pLineOffset.begin());
-
-			for (int i = 0; i < pLineOffset.size(); i++)
-			{
-				pLineOffset[i] -= val;
-			}
-
-			return CheckLimit(pBuf, pLineOffset);
-		}
-		return;
-	}
+	void CheckLimit(ImGuiTextBuffer &pBuf, ImVector<int> &pLineOffset);
 	void ExecCmd(const char *cmd);
 
 private:
@@ -72,9 +55,10 @@ private:
 
 	int				TextEditCallback(ImGuiInputTextCallbackData* data);
 
-	ImGuiTextBuffer		lBuf;
-	ImVector<int>		LineOffsets;
-	ImVector<char*>		History;
-	char				InputBuf[256];
-	int					HistoryPos;
+	ImGuiTextBuffer			lBuf;
+	ImVector<int>			LineOffsets;
+	ImVector<char*>			History;
+	ImVector<const char*>	Commands;
+	char					InputBuf[256];
+	int						HistoryPos;
 };

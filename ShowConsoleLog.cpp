@@ -24,7 +24,8 @@ void CShowConsoleLog::AddLog(const char *fmt, ...)
 			LineOffsets.push_back(old_size + 1);
 		}
 	}
-	//CheckLimit(lBuf, LineOffsets);
+	if(g_pGlob->iLimitConsole > 0)
+		CheckLimit(lBuf, LineOffsets);
 }
 
 void CShowConsoleLog::OnAttach(bool * IsOpen) {}
@@ -90,9 +91,41 @@ void CShowConsoleLog::OnUIRender()
 	return;
 }
 
+void CShowConsoleLog::CheckLimit(ImGuiTextBuffer & pBuf, ImVector<int>& pLineOffset)
+{
+	if (pLineOffset.size() > g_pGlob->iLimitConsole)
+	{
+		int val = pLineOffset[0];
+		pBuf.Buf.erase(pBuf.Buf.begin(), pBuf.Buf.begin()+val);
+
+		pLineOffset.erase(pLineOffset.begin());
+
+		for (int i = 0; i < pLineOffset.size(); i++)
+		{
+			pLineOffset[i] -= val;
+		}
+
+		return CheckLimit(pBuf, pLineOffset);
+	}
+	return;
+}
+
 void CShowConsoleLog::ExecCmd(const char *cmd)
 {
-	timer->AddNextFrame([sCmd = Strdup(cmd)]()
+	bool bSystemComm = false;
+	for (int i(0); i < Commands.Size; i++)
+	{
+		if (Strnicmp("LIMIT", cmd, 5) == 0)
+		{
+			int iVal = atoi((char *)(cmd + (strlen(Commands[i]) + 1)));
+			g_pGlob->iLimitConsole = iVal;
+			AddLog("New limit set to %d\n", iVal);
+			bSystemComm = true;
+		}
+	}
+
+	if(!bSystemComm)
+		timer->AddNextFrame([sCmd = Strdup(cmd)]()
 	{
 		CmdResult* res = reinterpret_cast< CmdResult *>(pUrls->GetData(CONSOLE_CMD, sCmd));
 		if (res->status == OK)

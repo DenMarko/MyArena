@@ -165,4 +165,7 @@ namespace Utilite
 
 		long long time;
 	};
+
+	size_t FormatArgs(wchar_t *buffer, size_t maxlength, const wchar_t *fmt, va_list params);
+	size_t Format(wchar_t *buffer, size_t maxlength, const wchar_t *fmt, ...);
 }

@@ -66,7 +66,8 @@ namespace my_timer
 		ITimer *CreateTimer(const std::shared_ptr<ITimerEvent> &pCallBack, float fInterval, void *pData);
 		void KillTimer(ITimer* pTimer);
 
-		template<typename F> void AddNextFrame(F&& func)
+		template<typename F>
+		void AddNextFrame(F&& func)
 		{
 			m_EventQueue.push(func);
 		}

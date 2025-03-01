@@ -29,19 +29,31 @@ CListServer::~CListServer()
 
 bool CListServer::LoadData()
 {
+	bool bRechek = false;
 	for (auto &tok : g_pGlob->token)
 	{
-		TokenResult *stats = reinterpret_cast<TokenResult *>(pUrls->StatusToken(tok->token.c_str()));
-		if (stats != nullptr)
+		TokenResult *pStats = reinterpret_cast<TokenResult *>(pUrls->StatusToken(tok->token.c_str()));
+		if (pStats != nullptr)
 		{
-			if (stats->status == OK)
+			switch (pStats->status)
 			{
-				tok->NServer = stats->SServer->data->hostname;
-				tok->date_ty_block = Utilite::Date(stats->SServer->server_dateblock);
+				case OK:
+				{
+					tok->NServer = pStats->SServer->data->hostname;
+					tok->date_ty_block = Utilite::Date(pStats->SServer->server_dateblock);
+					break;
+				}
+				case ERRORS:
+				{
+					bRechek = true;
+					break;
+				}
 			}
+			mem::Delete(pStats);
+		}
 		
-			mem::Delete(stats);
-		} else {
+		if(bRechek)
+		{
 			pTimerLoadData->SetNewInterval(5.0f);
 			return false;
 		}

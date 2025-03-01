@@ -10,19 +10,22 @@ namespace SpaceWin
 
 	CWinWin::CWinWin(HINSTANCE hInst)
 	{
-		wc.cbSize = sizeof(wc);
+		wc.cbSize = sizeof WNDCLASSEXW;
 		wc.style = CS_HREDRAW|CS_VREDRAW;
 		wc.lpfnWndProc = WndProc;
 		wc.cbClsExtra = 0L;
 		wc.cbWndExtra = 0L;
 		wc.hInstance = hInst;
 		wc.hCursor = nullptr;
-		wc.hbrBackground = nullptr;
+		wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 		wc.lpszMenuName = nullptr;
 		wc.lpszClassName = L"MyArena_beta";
 		wc.hIcon = wc.hIconSm = LoadIconA(hInst, MAKEINTRESOURCE(IDI_ICON1));
 
-		RegisterClassExW(&wc);
+		if (!RegisterClassExW(&wc))
+		{
+			throw Exception(__FILEW__, __LINE__, L"Failed to register window class");
+		}
 	}
 
 	CWinWin::~CWinWin()
@@ -31,24 +34,39 @@ namespace SpaceWin
 		this->Destroy();
 	}
 
-	bool CWinWin::CreateWind(int Width, int Height)
+	void CWinWin::CreateWind(int Width, int Height)
 	{
-		hWind = CreateWindowExW(0, wc.lpszClassName, L"MyArena", WS_OVERLAPPEDWINDOW, 100, 100, Width, Height, nullptr, nullptr, wc.hInstance, nullptr);
+		hWind = CreateWindowW(
+			wc.lpszClassName, 
+			L"MyArena", 
+			WS_OVERLAPPEDWINDOW, 
+			(GetSystemMetrics(SM_CXSCREEN) - Width) / 2, 
+			(GetSystemMetrics(SM_CYSCREEN) - Height) / 2, 
+			Width, 
+			Height, 
+			nullptr, 
+			nullptr, 
+			wc.hInstance, 
+			nullptr
+		);
+		
 		if (!hWind)
 		{
 			mWinValue.IsReadiWindow = false;
 			UnregisterClassW(wc.lpszClassName, wc.hInstance);
-			return false;
+			throw Exception(TEXT_(__FILE__), __LINE__, L"Error Create Window");
 		}
 
-		Show(SW_SHOWDEFAULT);
+		STARTUPINFOW info;
+		info.cb = sizeof STARTUPINFOW;
+		GetStartupInfoW(&info);
+		Show(info.wShowWindow == SW_HIDE ? SW_SHOWDEFAULT : info.wShowWindow);
 		mWinValue.IsReadiWindow = true;
-		return true;
 	}
 
 	void CWinWin::Destroy()
 	{
-		if((hWind) == 0)
+		if(hWind == 0)
 			return;
 
 		DestroyWindow(hWind);
@@ -74,7 +92,7 @@ namespace SpaceWin
 
 	void CWinWin::SystemCommand(WPARAM wParam)
 	{
-		if((hWind) == 0)
+		if(hWind == 0)
 			return;
 
 		SendMessage(hWind, WM_SYSCOMMAND, wParam, 0);
@@ -82,7 +100,7 @@ namespace SpaceWin
 
 	void CWinWin::Show(int iCmdShow)
 	{
-		if((hWind) == 0)
+		if(hWind == 0)
 			return;
 
 		ShowWindow(hWind, iCmdShow);

@@ -86,7 +86,6 @@ namespace SpaceUI
 		ImGui::PopStyleVar(2);
 
 		ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(50, 50, 50, 255));
-
 		if(!isMaximized)
 		{
 			RenderWindowOuterBorders(ImGui::GetCurrentWindow());
@@ -158,7 +157,7 @@ namespace SpaceUI
 		}
 		if (g.Style.FrameBorderSize > 0 && !window->DockIsActive)
 		{
-			float y = window->Pos.y + window->TitleBarHeight() - 1;
+			float y = window->Pos.y + (window->TitleBarHeight - 1.f);
 			window->DrawList->AddLine(ImVec2(window->Pos.x + border_size, y), ImVec2(window->Pos.x + window->Size.x - border_size, y), ImGui::GetColorU32(ImGuiCol_Border), g.Style.FrameBorderSize);
 		}
 	}

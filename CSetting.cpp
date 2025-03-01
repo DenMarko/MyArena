@@ -117,6 +117,13 @@ CSetting::CSetting()
 							_glob_.IsShowListServer = doc["ShowListServer"].GetBool();
 						}
 					}
+					if (doc.HasMember("LimitConsole"))
+					{
+						if (doc["LimitConsole"].IsInt64())
+						{
+							_glob_.iLimitConsole = doc["LimitConsole"].GetInt64();
+						}
+					}
 				}
 				delete[] buf;
 			} else {
@@ -271,6 +278,15 @@ CSetting::~CSetting()
 				doc.AddMember("ShowListServer", _glob_.IsShowListServer, doc.GetAllocator());
 			}
 
+			if (doc.HasMember("LimitConsole"))
+			{
+				doc["LimitConsole"].SetInt64(_glob_.iLimitConsole);
+			}
+			else
+			{
+				doc.AddMember("LimitConsole", _glob_.iLimitConsole, doc.GetAllocator());
+			}
+
 			rapidjson::StringBuffer buf;
 			rapidjson::Writer<rapidjson::StringBuffer> writer(buf);
 			doc.Accept(writer);
@@ -352,16 +368,16 @@ void CSetting::OnUIRender()
 		ImGui::SeparatorText(gLangManager->GetLang("Change the data update time"));
 		ImGui::Spacing();
 
-		const char *combIntervalLog[5] = {u8"2 sec", u8"3 sec", u8"4 sec", u8"5 sec", u8"6 sec"};
-		const char *combPrevValInterval = combIntervalLog[static_cast<int>(_glob_.fIntervalServerConsole) - 2];
+		const char *combIntervalLog[6] = {u8"1 sec", u8"2 sec", u8"3 sec", u8"4 sec", u8"5 sec", u8"6 sec"};
+		const char *combPrevValInterval = combIntervalLog[static_cast<int>(_glob_.fIntervalServerConsole) - 1];
 		if(ImGui::BeginCombo(gLangManager->GetLang("Console"), combPrevValInterval, ImGuiComboFlags_NoPreview))
 		{
-			for (int i = 0; i < 5; i++)
+			for (int i = 0; i < 6; i++)
 			{
-				const bool is_select = ((static_cast<int>(_glob_.fIntervalServerConsole) - 2) == i);
+				const bool is_select = ((static_cast<int>(_glob_.fIntervalServerConsole) - 1) == i);
 				if(ImGui::Selectable(combIntervalLog[i], is_select))
 				{
-					_glob_.fIntervalServerConsole = static_cast<float>(i + 2);
+					_glob_.fIntervalServerConsole = static_cast<float>(i + 1);
 					_glob_.g_ServerConsole->SetNewInterval(_glob_.fIntervalServerConsole);
 				}
 
@@ -422,7 +438,6 @@ void CSetting::OnUIRender()
 			}
 			ImGui::EndCombo();
 		}
-
 
 		ImGui::End();
 	}

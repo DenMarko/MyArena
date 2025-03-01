@@ -13,7 +13,7 @@ C_CUrl::C_CUrl() : IsOpen(true)
 	curl_global_init(CURL_GLOBAL_ALL);
 	pUrl = curl_easy_init();
 	if(pUrl == nullptr)
-		throw Exception(__FILE__, __LINE__, "Failed to create valid curl handle.");
+		throw Exception(TEXT_(__FILE__), __LINE__, L"Failed to create valid curl handle.");
 }
 
 C_CUrl::~C_CUrl()
@@ -648,6 +648,59 @@ void *C_CUrl::GetParseStatus(Utilite::CArray<char> &mData)
 
 	res->status = ERRORS;
 	return res;
+}
+
+bool C_CUrl::Curl_Perform(const std::string & res_url, Utilite::CArray<char>& data)
+{
+	bool ret = true;
+	CURLcode cod;
+
+	curl_easy_setopt(pUrl, CURLOPT_URL, res_url.c_str());
+	curl_easy_setopt(pUrl, CURLOPT_WRITEFUNCTION, WriteData);
+	curl_easy_setopt(pUrl, CURLOPT_WRITEDATA, &data);
+
+	curl_easy_setopt(pUrl, CURLOPT_VERBOSE, 1L);
+
+	cod = curl_easy_perform(pUrl);
+
+	if (cod != CURLE_OK)
+	{
+		IMGUI_DEBUG_LOG("curl error(%d): %s\n", static_cast<int>(cod), curl_easy_strerror(cod));
+		TimeTotal = -1;
+		ret = false;
+	} else {
+		curl_easy_getinfo(pUrl, CURLINFO_TOTAL_TIME, &TimeTotal);
+	}
+
+	curl_easy_reset(pUrl);
+	return ret;
+}
+
+unsigned int C_CUrl::findSubstring(const std::string & str1, const std::string & str2)
+{
+	auto iter1 = str1.begin();
+	auto iter2 = str2.begin();
+	unsigned int j = 0;
+
+	while (iter1 != str1.end() && iter2 != str2.end())
+	{
+		if (*iter1 == *iter2)
+		{
+			iter2++;
+		}
+		else
+		{
+			j = distance(str2.begin(), iter2);
+			if (j < 300)
+			{
+				iter1 -= j;
+				iter2 = str2.begin();
+			}
+		}
+		iter1++;
+	}
+
+	return distance(str2.begin(), iter2);
 }
 
 class TimeCallBack : public ITimerEvent

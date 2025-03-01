@@ -55,7 +55,8 @@ struct Globals
 				IsShowControlServer(true),
 				IsShowListServer(true),
 				enumLang(LANG::EN),
-				IsMapsReloads(false)
+				IsMapsReloads(false),
+				iLimitConsole(0)
 	{}
 	~Globals()
 	{
@@ -83,6 +84,8 @@ struct Globals
 	bool IsShowControlServer;
 	bool IsShowListServer;
 	bool IsMapsReloads;
+
+	int64_t iLimitConsole;
 };
 
 class CSetting : public CUIRender

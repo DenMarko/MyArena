@@ -2,7 +2,32 @@
 
 namespace SpaceMain
 {
-	CMain::CMain(HINSTANCE hInst, int Width, int Height) : gSetting(nullptr), p_controlServer(nullptr), Showlog(nullptr), th(nullptr), gListServer(nullptr), 
+	_threat::_threat() : m_IsPendingExit(false)
+	{
+		m_Thread = make_shared<thread>([this]() {
+			while (!m_IsPendingExit)
+			{
+				unique_lock<mutex> Lock(m_Mutex);
+				m_CondVar.wait_for(Lock, chrono::milliseconds(10));
+
+				timer->GlobalFrame(pTime->GetTime());
+			}
+		});
+	}
+
+	_threat::~_threat()
+	{
+		if (!m_IsPendingExit)
+		{
+			m_IsPendingExit = true;
+			m_CondVar.notify_one();
+			m_Thread->join();
+		}
+	}
+
+
+	CMain::CMain(HINSTANCE hInst, int Width, int Height) : gSetting(nullptr), 
+	p_controlServer(nullptr), Showlog(nullptr), th(nullptr), gListServer(nullptr), 
 	pFileInfo(nullptr), gWin(nullptr), gImGui(nullptr), gDevice3D(nullptr)
 	{
 		done = false;
@@ -14,32 +39,13 @@ namespace SpaceMain
 		IsShowAbout = false;
 
 		gSetting = make_shared<CSetting>();
+		GetResourceInfo(hInst);
+
 		gWin = make_shared<SpaceWin::CWinWin>(hInst);
-		gDevice3D = make_shared<Space3D::CDevice3D>();
-
-		HRSRC hRes = FindResource(hInst, MAKEINTRESOURCE(VS_VERSION_INFO), RT_VERSION);
-		if (hRes != nullptr)
-		{
-			HGLOBAL hResGlob = LoadResource(hInst, hRes);
-			if (hResGlob != nullptr)
-			{
-				void* pData = LockResource(hResGlob);
-				if (pData != nullptr)
-				{
-					UINT len;
-					VerQueryValue(pData, "\\", (void**)&pFileInfo, &len);
-				}
-				FreeResource(hResGlob);
-			}
-		}
-
 		gWin->CreateWind(Width, Height);
-		if (!gDevice3D->CreateDeviceD3D((*gWin)()))
-		{
-			gDevice3D->CleanupDeviceD3D();
-			gWin->Destroy();
-			throw Exception(__FILE__, __LINE__, "Failed to create Device Direct 3D.");
-		}
+
+		gDevice3D = make_shared<Space3D::CDevice3D>();
+		gDevice3D->CreateDeviceD3D((*gWin)());
 
 		gImGui = make_shared<SpaceUI::CImGui>();
 		gSetting->SetStile();
@@ -76,7 +82,7 @@ namespace SpaceMain
 
 	int CMain::Loop()
 	{
-		MSG msg;
+		MSG msg = { NULL };
 		double dCurTime = 0;
 		double iMemUsed = 0;
 		while (!done)
@@ -86,17 +92,27 @@ namespace SpaceMain
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			}
 
-			while (PeekMessage(&msg, nullptr, 0U, 0U, PM_REMOVE))
+			while (PeekMessageW(&msg, nullptr, 0U, 0U, PM_REMOVE))
 			{
 				TranslateMessage(&msg);
-				DispatchMessage(&msg);
+				DispatchMessageW(&msg);
 
-				if(msg.message == WM_QUIT)
+				if (msg.message == WM_QUIT)
+				{
 					done = true;
+				}
 			}
 
 			if(done)
+			{
 				break;
+			}
+
+			if (gDevice3D->SwapChainOccluded())
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(10));
+				continue;
+			}
 
 			{
 				SpaceWin::size_window winSize;
@@ -185,7 +201,7 @@ namespace SpaceMain
 					ImGui::Text("Memory used: %.3f KB", iMemUsed);
 					if (pFileInfo != nullptr)
 					{
-						ImGui::Text("Version program: %d.%d.%d.%d", HIWORD(pFileInfo->dwFileVersionMS), LOWORD(pFileInfo->dwFileVersionMS), HIWORD(pFileInfo->dwFileVersionLS), LOWORD(pFileInfo->dwFileVersionLS));
+						ImGui::Text("Version program: %s", pVersionProg.c_str());
 					}
 
 					ImGui::SetCursorPos(ImVec2((sizeWin.x - 80.f) * 0.5f, (sizeWin.y * 1.6f) * 0.5f));
@@ -210,5 +226,56 @@ namespace SpaceMain
 			gDevice3D->VSync(Space3D::VSYNCH_DISABLE);
 		}
 		return (int)msg.wParam;
+	}
+
+	void CMain::GetResourceInfo(HINSTANCE hInst)
+	{
+		HRSRC hRes = FindResource(hInst, MAKEINTRESOURCE(VS_VERSION_INFO), RT_VERSION);
+		if (hRes == nullptr)
+		{
+			return;
+		}
+
+		HGLOBAL hResGlob = LoadResource(hInst, hRes);
+		if (hResGlob == nullptr)
+		{
+			return;
+		}
+
+		void* pData = LockResource(hResGlob);
+		if (pData != nullptr)
+		{
+			DWORD resSize = SizeofResource(hInst, hRes);
+			if (resSize > 0)
+			{
+				size_t len = 0;
+				VerQueryValue(pData, "\\", (void**)&pFileInfo, &len);
+
+				LPVOID pValue = 0;
+				len = 0;
+				if (VerQueryValueW(pData, L"\\StringFileInfo\\000904b0\\ProductVersion", &pValue, &len))
+				{
+					size_t iLen = len * sizeof(char*);
+
+					char* pVer = new char[iLen+1];
+					memset(pVer, 0, iLen);
+					memcpy(pVer, pValue, iLen);
+
+					for (size_t i = 0; i < iLen; i++)
+					{
+						if (pVer[i] != '\0')
+						{
+							pVersionProg += pVer[i];
+						}
+						if (pVer[i] == '\0' && pVer[i + 1] == '\0')
+						{
+							break;
+						}
+					}
+					delete pVer;
+				}
+			}
+		}
+		FreeResource(hResGlob);
 	}
 }

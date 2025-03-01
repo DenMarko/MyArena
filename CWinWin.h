@@ -50,15 +50,15 @@ namespace SpaceWin
 		class Exception : public CBaseException
 		{
 		public:
-			Exception(const char *file, int line, const char *note) : CBaseException(file, line, note)
+			Exception(const wchar_t *file, int line, const wchar_t *note) : CBaseException(file, line, note)
 			{}
-			virtual std::string GetFullMessage() const override
+			virtual std::wstring GetFullMessage() const override
 			{
-				return GetNote() + "\nAt: " + GetLocation();
+				return GetNote() + L"\nAt: " + GetLocation();
 			}
-			virtual std::string GetExceptionType() const override
+			virtual std::wstring GetExceptionType() const override
 			{
-				return "Windows Exception";
+				return std::wstring(L"Windows Exception");
 			}
 		};
 
@@ -66,7 +66,7 @@ namespace SpaceWin
 		CWinWin(HINSTANCE hInst);
 		~CWinWin();
 
-		bool CreateWind(int Width, int Height);
+		void CreateWind(int Width, int Height);
 		void Destroy();
 
 		void setTitle(bool t);
